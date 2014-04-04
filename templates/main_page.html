@@ -1,0 +1,56 @@
+$def with (page)
+
+<h3>上传牌谱</h3>
+<form action="../tenhouCreateLog" method="get">
+<table >
+    <tr>
+        <td><p>牌谱地址：</p></td>
+        <td><input id="ref" type="text" name="ref" required="required" onchange="return chx(this);"></td>
+    </tr>
+    <tr>
+        <td>
+            <button id="submit" onclick="return submit(this);">提交</button>
+        </td>
+        <td> </td>
+    </tr>
+</table>
+</form>
+<a href="../tenhouCreateMutiLogs">批量上传牌谱</a>
+<br>
+<h3>牌谱搜索</h3>
+<form action="../main_page" method="get">
+<table>
+    <tr>
+        <td><p>玩家名：</p></td>
+        <td><input id="name" type="text" name="name" required="required"></td>
+    </tr>
+    <tr>
+        <td><p>个室号：</p></td>
+        <td><input id="lobby" type="text" name="lobby"></td>
+    </tr>
+    <tr>
+        <td><input id="submit" type="submit" value="搜索"></td>
+        <td> </td>
+    </tr>
+</table>
+</form>
+
+<script type="text/javascript">
+function chx(sender){
+    var patt = /\d{10}gm-\w{4}-\d{4,5}-\w{8}/g;;
+    obj = document.getElementById("ref");
+    obj.value = obj.value.match(patt);
+    return false;
+}
+function submit(sender){
+    obj = document.getElementById("ref");
+    if(obj.value){
+        window.navigate("../tenhouCreateLog?ref=" + obj.value);
+    }
+    return false;
+}
+</script>   
+
+$if page:
+    $:page
+<br>

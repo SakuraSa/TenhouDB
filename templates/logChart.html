@@ -1,0 +1,17 @@
+$def with (ref)
+
+<link rel="stylesheet" type="text/css" href="../static/css/logChart.css" />
+<div id="chart_block">
+<div id="container">Loading...</div>
+<div id="chart" class="easyui-accordion">
+    <div title="玩家信息" data-options="iconCls:'icon-help'" style="padding: 10px;">
+        <ul id="playerInfo" class="easyui-tree">
+        </ul>
+    </div>
+</div>
+</div>
+<script type="text/javascript">
+  var refCode = "$:ref";
+</script>
+<script type="text/javascript" src="../static/js/flotr2.min.js"></script>
+<script type="text/javascript" src="../static/js/pages/logChart.js"></script>

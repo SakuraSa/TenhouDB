@@ -1,0 +1,28 @@
+$def with (input)
+
+<link rel="stylesheet" type="text/css" href="../static/css/logChart.css" />
+<form action="../statistics" method="get">
+    <table>
+        <tr>
+            <td><p>玩家ID：</p></td>
+            <td><input id="ref" type="text" style="min-width: 300px;" name="name" required="required"></td>
+            <td>
+                <button id="submit">提交</button>
+            </td>
+            <td>
+                <p id="info"> </p>
+            </td>
+        </tr>
+    </table>
+</form>
+<div id="statistics_container" class="easyui-panel" title="统计结果">
+    <ul id="sttree" class="easyui-tree"></ul>
+</div>
+<script type="text/javascript">
+  var playerName = "$:input.name";
+  var lobby = "$:input.lobby";
+  var limit = "$:input.limit";
+  var before = "$:input.before";
+  var after = "$:input.after";
+</script>
+<script type="text/javascript" src="../static/js/pages/statistics.js"></script>

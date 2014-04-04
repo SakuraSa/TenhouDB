@@ -1,0 +1,36 @@
+$def with (page)
+
+<!DOCTYPE html> 
+<html lang="zh">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../static/css/base.css" />
+    <link rel="stylesheet" type="text/css" href="../static/themes/dark-hive/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/themes/icon.css">
+    <script src="http://libs.baidu.com/jquery/2.0.3/jquery.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.easyui.min.js"></script>
+    <title>Tenhou Logs</title>
+</head>
+<body>
+    <div id="base">
+    <div id="base_head">
+        <div id="base_head_logo">
+            <img id="base_head_logo" src="../static/img/logo.png">
+        </div>
+        <div id="base_head_title">
+            <h1 id="base_head_title">天凤牌谱收集站</h1>
+        </div>
+    </div>
+    <div id="base_block">
+    <div id="base_head_menu">
+        <li><a href="../">主页</a></li>
+        <li><a href="../tenhouCreateLog">牌谱</a></li>
+        <li><a href="../statistics">统计</a></li>
+    </div>
+    <div id="base_context">
+        $:page
+    </div>
+    </div>
+    </div>
+</body>
+</html>

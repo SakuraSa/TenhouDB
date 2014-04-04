@@ -1,0 +1,19 @@
+$def with (logs)
+<table>
+    <tr>
+        <td>序号</td>
+        <td>时间</td>
+        <td>地址</td>
+        <td>玩家</td>
+    </tr>
+    $for i in range(len(logs)):
+        <tr>
+            <td>$("%4d" % i)</td>
+            <td>$logs[i]["date"]</td>
+            <td><a href="../tenhouCreateLog?ref=$logs[i]['ref'] ">$logs[i]['ref']</a></td>
+            <td>
+                $for name in logs[i]['name']:
+                    <a href="../playerLogs?name=$name">$name</a>
+            </td>
+        </tr>
+</table>

@@ -1,0 +1,10 @@
+div#statistics_container {
+    width: auto;
+    height: 480px;
+    padding: 10px;
+    margin: 10px;
+}
+ul#sttree {
+    width: 400px;
+    margin: 10px;
+}
