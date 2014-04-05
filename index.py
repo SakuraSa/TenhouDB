@@ -47,11 +47,12 @@ class lastLogs:
 
 class playerLogs:
     def GET(self):
-        name = web.input().get('name', "NoName")
+        name = web.input().get('name', "")
         lobby = web.input().get('lobby', None)
-        limit = web.input().get('limit', 100)
-        limit = min(100, abs(limit))
-        refs  = tenhouDB.get_refs(name = name, lobby = lobby, limit = 100)
+        limit = web.input().get('limit', 10)
+        ruleCode = web.input().get('rule', None)
+        limit = min(500, abs(limit))
+        refs  = tenhouDB.get_refs(name = name, lobby = lobby, limit = limit)
         jsons = [tenhouDB.get_Json(ref) for ref in refs]
         return render.base( render.logList(jsons) )
 
@@ -59,10 +60,11 @@ class main_page:
     def GET(self):
         name = web.input().get('name', "")
         lobby = web.input().get('lobby', None)
-        limit = web.input().get('limit', 100)
+        limit = web.input().get('limit', 10)
+        ruleCode = web.input().get('rule', None)
         limit = min(500, abs(limit))
         if name:
-            refs = tenhouDB.get_refs(name = name, lobby = lobby, limit = 100)
+            refs = tenhouDB.get_refs(name = name, lobby = lobby, limit = limit)
         else:
             refs = tenhouDB.get_lastRefs()
         return render.base( render.main_page( render.logList([tenhouDB.get_Json(ref) for ref in refs]) ) )

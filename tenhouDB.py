@@ -40,7 +40,7 @@ ruleDic = {
 }
 errorCode = u"未知模式"
 def get_info_from_ref(ref):
-    date = datetime.datetime(year = int(ref[0:4]), month = int(ref[4:6]), day = int(ref[6:8]), hour = int(ref[8:10]))
+    date = datetime.datetime.strptime(ref[0:10], "%Y%m%d%H")
     ruleCode = ref[13:17]
     ruleStr = ruleDic.get(ruleCode, errorCode)
     lobby = ref[18:22]
@@ -81,11 +81,13 @@ def addLog(ref):
     temp = cursor.execute(r'select ref from logs where ref = ?',(ref,)).fetchall()
     if not temp:
         obj, text = downloadLog(r"http://tenhou.net/0/mjlog2json.cgi?" + ref)
-        cursor.execute(r"insert into logs (ref, json) values (?, ?)", 
-                       (obj["ref"], text))
+        info = get_info_from_ref(ref)
+        cursor.execute(r"insert into logs (ref, json, gameat, rulecode, lobby) values (?, ?, ?, ?, ?)", 
+                       (obj["ref"], text, info["date"], info["ruleCode"], info["lobby"]))
         for name in obj["name"]:
             cursor.execute(r"insert into logs_name (ref, name) values (?, ?)", 
                            (obj["ref"], name))
+            cursor.execute(r"delete from statistics_cache where name = ?", (name, ))
         database.commit()
         return get_Json(obj["ref"])
     else:
@@ -101,27 +103,40 @@ def addLogs(refString):
                 yield (False, e)
     return
 
-def get_refs(name, after = None, before = None, lobby = None, limit = 10):
-    if not after:
-        after = datetime.datetime(year = 1970, month = 1, day = 1)
-    if not before:
-        before = datetime.datetime.now()
+def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, limit = 10):
+    sqlparam = [name]
+    queryParam = ["name = ?"]
+    if not after is None:
+        sqlparam.append(after)
+        queryParam.append("gameat > ?")
+    if not before is None:
+        sqlparam.append(before)
+        queryParam.append("gameat < ?")
+    if not lobby is None:
+        sqlparam.append(lobby)
+        queryParam.append("lobby = ?")
+    if not ruleCode is None:
+        sqlparam.append(ruleCode)
+        queryParam.append("rulecode = ?")
+    sqlparam.append(limit)
+    sqlcmd   = """
+    select logs.ref 
+    from logs inner join logs_name 
+        on logs.ref = logs_name.ref 
+    where %s
+    order by logs.createat desc
+    limit ?;
+    """ % " and ".join(queryParam)
 
     resLst = list()
-    for row in cursor.execute(r"Select ref From logs_name where name = ? order by id desc", (name, )).fetchall():
-        info = get_info_from_ref(row[0])
-        if not (after < info["date"] < before):
-            continue
-        if lobby:
-            if info["lobby"] != lobby:
-                continue
+    for row in cursor.execute(sqlcmd, sqlparam).fetchall():
         resLst.append(row[0])
-    return resLst[:limit]
+    return resLst
 
 def get_lastRefs(limit = 10):
     resLst = list()
     resSet = set()
-    for row in cursor.execute(r"Select ref from logs_name order by id desc limit ?", (limit * 4, )).fetchall():
+    for row in cursor.execute(r"Select distinct ref from logs order by createat desc limit ?", (limit, )).fetchall():
         if not row[0] in resSet:
             resLst.append(row[0])
             resSet.add(row[0])
@@ -155,6 +170,17 @@ def get_OriText(ref):
     else:
         addLog(ref)
         return get_OriText(ref)
+
+def get_statistics_cache(hashs):
+    temp = cursor.execute(r"select json from statistics_cache where hash = ? limit 1", (hashs, )).fetchall()
+    if temp:
+        return temp[0][0]
+    else:
+        return None
+
+def set_statistics_cache(name, hashs, json):
+    cursor.execute(r"insert into statistics_cache(name, hash, json) values (?, ?, ?)", (name, hashs, json))
+    database.commit()
 
         
 if __name__ == "__main__":

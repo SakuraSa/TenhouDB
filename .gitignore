@@ -215,5 +215,5 @@ pip-log.txt
 .mr.developer.cfg
 
 #database for test
-.db
 *.db
+DBbackup/

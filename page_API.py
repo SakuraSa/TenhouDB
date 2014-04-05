@@ -8,6 +8,7 @@ import tenhouStatistics
 import datetime
 import json
 import re
+import hashlib
 
 class page_API(object):
     """docstring for page_API"""
@@ -154,25 +155,45 @@ class API_statistics(APIbase):
     option = {"limit": 500,
               "lobby": None,
               "after": None,
-              "before": None,}
+              "before": None,
+              "rule": None}
     def __init__(self):
         super(API_statistics, self).__init__()
 
-    def work(self, name, limit, lobby, after, before):
+    def work(self, name, limit, lobby, after, before, rule):
         before = datetimeParse(before)
         after = datetimeParse(after)
         limit = intParse(limit)
-        refs = tenhouDB.get_refs(name = name,
-                                 limit = limit,
-                                 lobby = lobby,
-                                 after = after,
-                                 before = before)
-        if len(refs) < 30:
-            return "error :need more than 30 logs to get statistics."
-        jsons = tenhouDB.get_Jsons(refs)
-        games = [tenhouLog.game(js) for js in jsons]
-        ps    = tenhouStatistics.PlayerStatistic(games = games, playerName = name)
-        return ps.json()
+        params = list()
+        params.append(name)
+        params.append(str(limit))
+        if not after is None:
+            params.append(after.ctime())
+        if not before is None:
+            params.append(before.ctime())
+        if not lobby is None:
+            params.append(lobby)
+        if not rule is None:
+            params.append(rule)
+        hashs = hashlib.sha256(", ".join(params)).hexdigest()
+        cache = tenhouDB.get_statistics_cache(hashs = hashs)
+        if cache:
+            return cache
+        else:
+            refs = tenhouDB.get_refs(name = name,
+                                     limit = limit,
+                                     lobby = lobby,
+                                     ruleCode = rule,
+                                     after = after,
+                                     before = before)
+            if len(refs) < 30:
+                return "error :need more than 30 logs to get statistics."
+            jsons = tenhouDB.get_Jsons(refs)
+            games = [tenhouLog.game(js) for js in jsons]
+            ps    = tenhouStatistics.PlayerStatistic(games = games, playerName = name)
+            js    = ps.json()
+            tenhouDB.set_statistics_cache(name = name, hashs = hashs, json = js)
+            return js
 
 def datetimeParse(text):
     if text is None:
