@@ -10,14 +10,11 @@ $def with (input)
                 <button id="submit">提交</button>
             </td>
             <td>
-                <p id="info"> </p>
+                <p id="info">在上传新牌谱后的第一次统计会比较耗时(2-7s)</p>
             </td>
         </tr>
     </table>
 </form>
-<div id="statistics_container" class="easyui-panel" title="统计结果">
-    <ul id="sttree" class="easyui-tree"></ul>
-</div>
 <script type="text/javascript">
   var playerName = "$:input.name";
   var lobby = "$:input.lobby";
@@ -25,4 +22,7 @@ $def with (input)
   var before = "$:input.before";
   var after = "$:input.after";
 </script>
+<div id="statistics_container" class="easyui-panel" title="统计结果">
+    <ul id="sttree" class="easyui-tree"></ul>
+</div>
 <script type="text/javascript" src="../static/js/pages/statistics.js"></script>

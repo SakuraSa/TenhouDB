@@ -291,14 +291,18 @@ $(document).ready(
             if(limit) APIurl += "&limit=" + limit;
             if(before) APIurl += "&before=" + before;
             if(after) APIurl += "&after=" + after;
+            $("p#info").text("Loading...");
             $.get(APIurl, function(data,status){
                 if(status=='success'){
                     if(data.substring(0,5) == "error"){
                         $("p#info").text(data);
                     }else{
+                        $("p#info").text("");
                         jsonObj = JSON.parse(data);
                         fillChart(jsonObj);
                     }
+                }else{
+                    $("p#info").text(data);
                 }
             });
         }
