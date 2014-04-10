@@ -96,6 +96,10 @@ class websiteLogs:
             lines.append("<p>error: log file is not found.</p>")
         return render.base( "<br>".join(lines) )
 
+class agari:
+    def GET(self):
+        return render.base( render.agari() )
+
 t_globals = {
     'datestr': web.datestr, 
 }
@@ -111,7 +115,9 @@ urls  = ("/?", "main_page",
          "/tenhouCreateMutiLogs/?", "tenhouCreateMutiLogs",
          "/teamworkStatistics/?", "teamworkStatistics",
          "/statistics/?", "statistics",
-         "/websiteLogs", "websiteLogs")
+         "/websiteLogs", "websiteLogs",
+         "/agari/?", "agari")
+
 pages = {"main_page": main_page,
          "GetIcon": GetIcon,
          "tenhouCreateLog": tenhouCreateLog,
@@ -121,7 +127,9 @@ pages = {"main_page": main_page,
          "tenhouCreateMutiLogs": tenhouCreateMutiLogs,
          "teamworkStatistics": teamworkStatistics,
          "statistics": statistics,
-         "websiteLogs": websiteLogs}
+         "websiteLogs": websiteLogs,
+         "agari": agari}
+
 app   = web.application(urls, pages)
 
 
