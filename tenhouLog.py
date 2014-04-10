@@ -389,7 +389,7 @@ class log(object):
 
     @staticmethod
     def gameIndexDes(indexTuple):
-        changfeng = MJCard.dxnb[indexTuple[0] / 4]
+        changfeng = MJCard.dxnb[indexTuple[0] / 4 + 1]
         changshu  = MJCard.chnum(indexTuple[0] % 4 + 1)
         changju   = indexTuple[1]
         return u"%s%s局%s本场" % (changfeng, changshu, changju)       
