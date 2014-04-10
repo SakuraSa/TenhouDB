@@ -25,8 +25,7 @@ function c136_to_c34(c136){
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 function img0(n,style,qt,q,da34,syanten){
-	return "<a href=\"?"+qt+"="+q+"\" class=D onmouseover=\"daFocus(this,"+da34+","+syanten+");\" onmouseout=\"daUnfocus();\" >"+img1(n,style)+"</a>";
-//	return "<a href=\"?"+qt+"="+q+"\" class=D onmouseover=\"daFocus(this,"+da34+","+syanten+");\" onmouseout=\"daUnfocus();\" onclick=\"printTehai('"+qt+"','"+q+"');return false;\">"+img(n,style)+"</a>";
+	return "<a href=\"javascript:main('"+q+"', '"+qt+"');\" class=D onmouseover=\"daFocus(this,"+da34+","+syanten+");\" onmouseout=\"daUnfocus();\" >"+img1(n,style)+"</a>";
 }
 function img1(n,style){
 	return "<img src=\"../static/img/agari/"+n+".gif\" border=0 "+(style?style:"")+" />";
@@ -35,7 +34,7 @@ function img2(n){
 	return "<img src=\"../static/img/agari/"+n+".gif\" class=D />";
 }
 function img3(n,da34,qt,q){
-	return "<a href=\"?"+qt+"="+q+"\" class=D onmouseover=\"daFocus(this,"+da34+");\" onmouseout=\"daUnfocus();\"><img src=\"../static/img/agari/"+n+".gif\" border=0 /></a>";
+	return "<a href=\"javascript:main('"+q+"', '"+qt+"');\" class=D onmouseover=\"daFocus(this,"+da34+");\" onmouseout=\"daUnfocus();\"><img src=\"../static/img/agari/"+n+".gif\" border=0 /></a>";
 }
 function sprintSyanten(n){
 	return n==-1?"和了":n==0?"听牌":n+"向听";
@@ -125,8 +124,8 @@ function printTehai(qt,q){
 	var s="";
 	s+="<hr size=1 color=#CCCCCC >";
 	switch(qt.substr(0,1)){
-	case "q":s+="标准型(包含七対国士)的计算结果"    +" / <a href=\"?p"+qt.substr(1)+"="+q+"\">标准型</a><br>";break;
-	case "p":s+="一般型(不包含七対国士)的计算结果"+" / <a href=\"?q"+qt.substr(1)+"="+q+"\">一般型</a><br>";break;
+	case "q":s+="标准型(包含七対国士)的计算结果"    +" / <a href=\""+"javascript:main(document.getElementById('tehaiInput').value, 'p');"+"\">标准型</a><br>";break;
+	case "p":s+="一般型(不包含七対国士)的计算结果"+" / <a href=\""+"javascript:main(document.getElementById('tehaiInput').value, 'q');"+"\">一般型</a><br>";break;
 	}
 	var no14=(qt.substr(1,1)=="d");
 	qt=qt.substr(0,1);
@@ -152,7 +151,7 @@ function printTehai(qt,q){
 	var syanten_org01=calcSyanten2(c,34);
 	tehai+=sprintSyanten2(syanten_org01,q.length==14*2);
 	tehai+="("+Math.floor(q.length/2)+"枚)";
-	if (syanten_org01[0]==-1) tehai+=" / <a href=\"?\" >生成新手牌</a>";
+	if (syanten_org01[0]==-1) tehai+=" / <a href=\"javascript:main('', _qt);\" >生成新手牌</a>";
 	tehai+="<br/>";
 
 	var syanten_org=(qt=="q"?syanten_org01[0]:syanten_org01[1]);
@@ -245,45 +244,78 @@ function printTehai(qt,q){
 	$$("m2",s);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-document.write(
-	"<form name=f style=\"margin:0px;\" >"+
-		"<a href=\"?\" >手牌生成</a> | "+
-		"手牌 <input type=text name=q size=25 ><input type=submit value=\" OK \">"+
-		"<hr size=1 color=#CCCCCC >"+
-	"</form>"+
-	"<div id=tehai align=center ></div>"+
-	"<div id=tips align=center style=\"height:18px\"></div>"+
-	"<div id=m2 align=center ></div>"
-);
-
-var q=window.location.search.substr(1);
-q=q.replace(/^([^=]+)=(.+)/,"$2");
-var qt=RegExp.$1;
-document.f.q.value=q;
-if (!q.length){
-	var i, s="", c=Math.floor(Math.random()*3);
-	s+="<table cellpadding=0 cellspacing=0 ><tr><td>";
-	for(i=9;i>=0;--i){
-		var yama=setup_yama(i>3?4*34:4*9);
-		var tehai=yama.splice(0,i==9?4:i==8?7:i==7?10:13).sort(function(a,b){return a-b;});
-		var tsumo136=yama.splice(0,1)[0];
-		var j,q="";
-		for(j=0;j<tehai.length;++j) q+=MPSZ.fromHai136(tehai[j]+(i>3?0:4*9*c));
-		if (tsumo136!=-1) q+=MPSZ.fromHai136(tsumo136+(i>3?0:4*9*c)), tehai.push(tsumo136);
-		var syanten01=calcSyanten2(tehai,tehai.length);
-		s+="■<a href=\"?q="+MPSZ.contract(q)+"\" class=D >"
-		s+=sprintSyanten2(syanten01,tehai.length==14);
-		s+="<br>";
-		for(j=0;j<q.length;j+=2) s+=img1(q.substr(j,2),(j%6)==2&&j==q.length-2?" hspace=3 ":"");
-		s+="</a>";
-		s+="<br><br>";
-		if (i==4) document.f.q.value=MPSZ.contract(q);
+//获取QueryString的数组
+function getQueryString(){
+	var result = location.search.match(new RegExp("[\?\&][^\?\&]+=[^\?\&]+","g")); 
+	if(result == null){
+		return "";
 	}
-	s+="</td></tr></table>";
-	$$("tehai",s);
-}else if (q.match(/^(\d+m|\d+p|\d+s|[1234567]+z)*$/)==null){
-	$$("tehai","<font color=#FF0000 >INVALID QUERY</font>");
-}else if (q.length){
-	printTehai(qt,q);
+	for(var i = 0; i < result.length; i++){
+		result[i] = result[i].substring(1);
+	}
+	return result;
 }
+
+//根据QueryString参数名称获取值
+function getQueryStringByName(name){
+	var result = location.search.match(new RegExp("[\?\&]" + name+ "=([^\&]+)","i"));
+	if(result == null || result.length < 1){
+		return "";
+	}
+	return result[1];
+}
+
+//根据QueryString参数索引获取值
+function getQueryStringByIndex(index){
+	if(index == null){
+		return "";
+	}
+	var queryStringList = getQueryString();
+	if (index >= queryStringList.length){
+		return "";
+	}
+	var result = queryStringList[index];
+	var startIndex = result.indexOf("=") + 1;
+	result = result.substring(startIndex);
+	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function main(q, qt){
+	document.getElementById("tehaiInput").value=q;
+	if (!q.length){
+		var i, s="", c=Math.floor(Math.random()*3);
+		s+="<table cellpadding=0 cellspacing=0 ><tr><td>";
+		for(i=9;i>=0;--i){
+			var yama=setup_yama(i>3?4*34:4*9);
+			var tehai=yama.splice(0,i==9?4:i==8?7:i==7?10:13).sort(function(a,b){return a-b;});
+			var tsumo136=yama.splice(0,1)[0];
+			var j,q="";
+			for(j=0;j<tehai.length;++j) q+=MPSZ.fromHai136(tehai[j]+(i>3?0:4*9*c));
+			if (tsumo136!=-1) q+=MPSZ.fromHai136(tsumo136+(i>3?0:4*9*c)), tehai.push(tsumo136);
+			var syanten01=calcSyanten2(tehai,tehai.length);
+			s+="■<a href=\"javascript:main('"+MPSZ.contract(q)+"', _qt);\" class=D >"
+			s+=sprintSyanten2(syanten01,tehai.length==14);
+			s+="<br>";
+			for(j=0;j<q.length;j+=2) s+=img1(q.substr(j,2),(j%6)==2&&j==q.length-2?" hspace=3 ":"");
+			s+="</a>";
+			s+="<br><br>";
+			if (i==4) document.getElementById("tehaiInput").value=MPSZ.contract(q);
+		}
+		s+="</td></tr></table>";
+		$$("tehai",s);
+	}else if (q.match(/^(\d+m|\d+p|\d+s|[1234567]+z)*$/)==null){
+		$$("tehai","<font color=#FF0000 >INVALID QUERY</font>");
+	}else if (q.length){
+		printTehai(qt,q);
+	}
+}
+
+var _qt="q";
+var _q=getQueryStringByName("q");
+if(!_q) {
+	_q=getQueryStringByName("p");
+	_qt="p";
+}
+main(_q, _qt);
