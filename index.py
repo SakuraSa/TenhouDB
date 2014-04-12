@@ -10,6 +10,7 @@ import tenhouLog
 
 import page_API
 
+import DB_updater
 
 class GetIcon:
     def GET(self):

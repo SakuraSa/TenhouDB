@@ -17,12 +17,13 @@ database  = sqlite3.connect(dbname)
 cursor    = database.cursor()
 if cursor.execute(r"SELECT COUNT(*) as CNT FROM sqlite_master where type='table' and name='dbupdate';").fetchall()[0][0]:
     version = cursor.execute(r"SELECT value FROM dbupdate where key='version' limit 1").fetchall()[0][0]
-database.close()
 if not os.path.exists(backupDir):
     os.mkdir(backupDir)
 backupName = datetime.datetime.now().strftime("%Y%m%d%H%M%S.bk." + version)
 backupPath = os.path.join(backupDir, backupName)
 shutil.copyfile(dbname, backupPath)
+print "Backup DB to", backupPath, "whit %d logs" % cursor.execute(r'select COUNT(*) as CNT from logs').fetchall()[0][0]
+database.close()
 
 #database update process
 if version == "ver0.001":

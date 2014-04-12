@@ -82,8 +82,8 @@ def addLog(ref):
     if not temp:
         obj, text = downloadLog(r"http://tenhou.net/0/mjlog2json.cgi?" + ref)
         info = get_info_from_ref(ref)
-        cursor.execute(r"insert into logs (ref, json, gameat, rulecode, lobby) values (?, ?, ?, ?, ?)", 
-                       (obj["ref"], text, info["date"], info["ruleCode"], info["lobby"]))
+        cursor.execute(r"insert into logs (ref, json, gameat, rulecode, lobby, createat) values (?, ?, ?, ?, ?, ?)", 
+                       (obj["ref"], text, info["date"], info["ruleCode"], info["lobby"], datetime.datetime.now()))
         for name in obj["name"]:
             cursor.execute(r"insert into logs_name (ref, name) values (?, ?)", 
                            (obj["ref"], name))
@@ -112,7 +112,7 @@ def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, l
     if not before is None:
         sqlparam.append(before)
         queryParam.append("gameat < ?")
-    if not lobby is None:
+    if (not lobby is None) and lobby:
         sqlparam.append(lobby)
         queryParam.append("lobby = ?")
     if not ruleCode is None:
