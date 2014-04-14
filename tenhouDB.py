@@ -182,6 +182,17 @@ def set_statistics_cache(name, hashs, json):
     cursor.execute(r"insert into statistics_cache(name, hash, json) values (?, ?, ?)", (name, hashs, json))
     database.commit()
 
+def get_hotIDs(limit = 50, morethan = 30):
+    return cursor.execute("""
+        select Name,CNT from (
+            select distinct logs_name.name as Name, COUNT(*) as CNT 
+            from logs_name join logs 
+                on logs_name.ref = logs.ref
+            group by logs_name.name
+            order by CNT desc
+        ) where CNT >= ? and not(name='NoName')
+        order by CNT desc
+        limit ?""", (morethan, limit, )).fetchall()
         
 if __name__ == "__main__":
     for js in get_Jsons(get_refs(name = "Rnd495")):

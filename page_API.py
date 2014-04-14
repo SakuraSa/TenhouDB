@@ -15,14 +15,11 @@ class page_API(object):
     APIs = []
     def __init__(self):
         super(page_API, self).__init__()
-        for i in range(len(page_API.APIs)):
-            if not isinstance(page_API.APIs[i], APIbase):
-                page_API.APIs[i] = page_API.APIs[i]()
 
     @staticmethod
     def regist(cls):
         if issubclass(cls, APIbase):
-            page_API.APIs.append(cls)
+            page_API.APIs.append(cls())
         return cls
 
     def GET(self):
@@ -33,7 +30,7 @@ class page_API(object):
         for api in page_API.APIs:
             if method == api.name:
                 return api(webInput)
-        return "error: unkown method %s", (method, )
+        return "error: unkown method %s" % (method, )
 
 class APIbase(object):
     """docstring for APIbase"""
@@ -41,7 +38,7 @@ class APIbase(object):
     params = []
     option = {}
     def __init__(self):
-        super(APIbase, self).__init__()
+        object.__init__(self)
 
     def __call__(self, webInput):
         kargs = dict()
@@ -69,7 +66,7 @@ class API_APIList(APIbase):
     params = []
     option = {}
     def __init__(self):
-        super(API_APIList, self).__init__()
+        APIbase.__init__(self)
 
     def work(self):
         return json.dumps(
@@ -85,8 +82,8 @@ class API_createLog(APIbase):
     params = ["ref"]
     option = {"getJson": False}
     def __init__(self):
-        super(API_createLog, self).__init__()
-    
+        APIbase.__init__(self)
+            
     def work(self, ref, getJson):
         res = tenhouDB.ref_regex.findall(ref)
         if not res:
@@ -109,8 +106,8 @@ class API_logChart(APIbase):
     params = ["ref"]
     option = {}
     def __init__(self):
-        super(APIbase, self).__init__()
-
+        APIbase.__init__(self)
+        
     def work(self, ref):
         res = tenhouDB.ref_regex.findall(ref)
         if not res:
@@ -152,14 +149,14 @@ class API_statistics(APIbase):
     """docstring for API_statistics"""
     name   = "statistics"
     params = ["name"]
-    option = {"limit": 500,
+    option = {"limit": 50,
               "lobby": None,
               "after": None,
               "before": None,
               "rule": None}
     def __init__(self):
-        super(API_statistics, self).__init__()
-
+        APIbase.__init__(self)
+        
     def work(self, name, limit, lobby, after, before, rule):
         before = datetimeParse(before)
         after = datetimeParse(after)
@@ -196,6 +193,21 @@ class API_statistics(APIbase):
             tenhouDB.set_statistics_cache(name = name, hashs = hashs, json = js)
             return js
 
+@page_API.regist
+class API_hotIDs(APIbase):
+    """docstring for API_hotIDs"""
+    name   = "hotIDs"
+    params = []
+    option = {"limit": 50}
+    def __init__(self):
+        APIbase.__init__(self)
+        
+    def work(self, limit):
+        return json.dumps(
+            [dict(name = row[0], count = row[1]) 
+             for row in tenhouDB.get_hotIDs(limit = limit)])
+
+
 def datetimeParse(text):
     if text is None:
         return None
@@ -220,3 +232,4 @@ class CJsonEncoder(json.JSONEncoder):
             return obj.strftime('%Y-%m-%d')
         else:
             return json.JSONEncoder.default(self, obj)
+

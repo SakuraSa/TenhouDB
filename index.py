@@ -101,6 +101,10 @@ class agari:
     def GET(self):
         return render.base( render.agari() )
 
+class hotIDs:
+    def GET(self):
+        return render.base( render.hotIDs() )
+
 t_globals = {
     'datestr': web.datestr, 
 }
@@ -117,7 +121,8 @@ urls  = ("/?", "main_page",
          "/teamworkStatistics/?", "teamworkStatistics",
          "/statistics/?", "statistics",
          "/websiteLogs", "websiteLogs",
-         "/agari/?", "agari")
+         "/agari/?", "agari",
+         "/hotIDs/?", "hotIDs")
 
 pages = {"main_page": main_page,
          "GetIcon": GetIcon,
@@ -129,7 +134,8 @@ pages = {"main_page": main_page,
          "teamworkStatistics": teamworkStatistics,
          "statistics": statistics,
          "websiteLogs": websiteLogs,
-         "agari": agari}
+         "agari": agari,
+         "hotIDs": hotIDs}
 
 app   = web.application(urls, pages)
 
