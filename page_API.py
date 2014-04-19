@@ -198,14 +198,15 @@ class API_hotIDs(APIbase):
     """docstring for API_hotIDs"""
     name   = "hotIDs"
     params = []
-    option = {"limit": 50}
+    option = {"limit": 50,
+              "morethan": 30}
     def __init__(self):
         APIbase.__init__(self)
         
     def work(self, limit):
         return json.dumps(
             [dict(name = row[0], count = row[1]) 
-             for row in tenhouDB.get_hotIDs(limit = limit)])
+             for row in tenhouDB.get_hotIDs(limit = limit, morethan = morethan)])
 
 
 def datetimeParse(text):
@@ -233,3 +234,10 @@ class CJsonEncoder(json.JSONEncoder):
         else:
             return json.JSONEncoder.default(self, obj)
 
+if __name__ == '__main__':
+    print "API list:"
+    for api in page_API.APIs:
+        print "name  :", api.name
+        print "params:", api.params
+        print "option:", api.option
+        print ""

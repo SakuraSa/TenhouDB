@@ -6,6 +6,7 @@ import datetime
 import sqlite3
 import os
 import shutil
+import json
 
 dbname    = "tenhou.db"
 tempfile  = "temp.db"
@@ -83,5 +84,31 @@ if version == "ver0.001":
             hash char(64) NOT NULL,
             json text NOT NULL
         );""")
+    database.close()
 
     print "ok, database update to ver0.002."
+elif version == "ver0.002":
+    """
+    var0.001 => ver0.002
+    """
+
+    database = sqlite3.connect(dbname)
+    cursor = database.cursor()    
+
+    errorLogs = list()
+    for ref, jss in cursor.execute("""select ref, json from logs""").fetchall():
+        try:
+            js = json.loads(jss)
+            sc = js["sc"]
+        except Exception, e:
+            errorLogs.append(ref)
+
+    for ref in errorLogs:
+        cursor.execute(r"delete from logs where ref = ?", (ref, ))
+        cursor.execute(r"delete from logs_name where ref = ?", (ref, ))
+
+    cursor.execute(r"update dbupdate set value = ? where key = ?",("version", "ver0.003"))
+    database.commit()
+
+    database.close()
+    print "ok, database update to ver0.003."

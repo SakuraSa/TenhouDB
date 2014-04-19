@@ -2,6 +2,7 @@
 #coding=utf-8
 
 import datetime
+import threading
 import sqlite3
 import requests
 import json
@@ -10,6 +11,29 @@ import os
 
 database = sqlite3.connect("tenhou.db", check_same_thread = False)
 cursor = database.cursor()
+mutex = threading.Lock()
+workingThread = None
+
+def databaseOperation(func):
+    def bar(*arg, **karg):
+        global workingThread,mutex
+        currentThread = threading.currentThread()
+        otherThread = not currentThread is workingThread
+        if otherThread:
+            mutex.acquire(1)
+            workingThread = currentThread
+        ret = None
+        try:
+            ret = func(*arg, **karg)
+        except Exception, e:
+            if otherThread:
+                mutex.release()
+            raise e
+        if otherThread:
+            mutex.release()
+        return ret
+    return bar
+
 
 ref_regex = re.compile(r"(\d{10}gm-\w{4}-\d{4,5}-\w{8})")
 
@@ -75,8 +99,11 @@ def downloadLog(url):
         obj["name"].pop()
     if len(obj["name"]) != 4:
         raise Exception("Not 4 Player Game, skipped.")
+    if not "sc" in obj:
+        raise Exception("Game was stopped by host, skipped.")
     return obj, req.text
 
+@databaseOperation
 def addLog(ref):
     temp = cursor.execute(r'select ref from logs where ref = ?',(ref,)).fetchall()
     if not temp:
@@ -103,6 +130,7 @@ def addLogs(refString):
                 yield (False, e)
     return
 
+@databaseOperation
 def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, limit = 10):
     sqlparam = [name]
     queryParam = ["name = ?"]
@@ -124,7 +152,7 @@ def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, l
     from logs inner join logs_name 
         on logs.ref = logs_name.ref 
     where %s
-    order by logs.createat desc
+    order by logs.gameat desc
     limit ?;
     """ % " and ".join(queryParam)
 
@@ -133,6 +161,7 @@ def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, l
         resLst.append(row[0])
     return resLst
 
+@databaseOperation
 def get_lastRefs(limit = 10):
     resLst = list()
     resSet = set()
@@ -142,6 +171,7 @@ def get_lastRefs(limit = 10):
             resSet.add(row[0])
     return resLst
 
+@databaseOperation
 def get_Json(ref):
     temp = cursor.execute(r"Select json From logs where ref = ? limit 1", (ref, )).fetchall()
     if temp:
@@ -163,6 +193,7 @@ def get_Jsons(refs):
         resLst.append(get_Json(ref))
     return resLst
 
+@databaseOperation
 def get_OriText(ref):
     temp = cursor.execute(r"Select json From logs where ref = ? limit 1", (ref, )).fetchall()
     if temp:
@@ -171,6 +202,7 @@ def get_OriText(ref):
         addLog(ref)
         return get_OriText(ref)
 
+@databaseOperation
 def get_statistics_cache(hashs):
     temp = cursor.execute(r"select json from statistics_cache where hash = ? limit 1", (hashs, )).fetchall()
     if temp:
@@ -178,10 +210,12 @@ def get_statistics_cache(hashs):
     else:
         return None
 
+@databaseOperation
 def set_statistics_cache(name, hashs, json):
     cursor.execute(r"insert into statistics_cache(name, hash, json) values (?, ?, ?)", (name, hashs, json))
     database.commit()
 
+@databaseOperation
 def get_hotIDs(limit = 50, morethan = 30):
     return cursor.execute("""
         select Name,CNT from (
