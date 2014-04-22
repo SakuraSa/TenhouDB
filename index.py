@@ -78,13 +78,7 @@ class main_page:
 
 class statistics:
     def GET(self):
-        dic = web.input()
-        dic["name"] = dic.get("name", "")
-        dic["limit"] = dic.get("limit", "")
-        dic["lobby"] = dic.get("lobby", "")
-        dic["before"] = dic.get("before", "")
-        dic["after"] = dic.get("after", "")
-        return render.base( render.statistics(dic) )
+        return render.base( render.statistics() )
 
 class websiteLogs:
     def GET(self):

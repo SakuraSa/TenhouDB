@@ -34,6 +34,11 @@ class game(object):
             for logObj in self.jsonObj["log"]
         ]
 
+        for lg in self.logs:
+            for p in range(len(self.players)):
+                if lg.isRichi(p):
+                    lg._endScore -= 1000
+
     def __str__(self):
         return ("<game %s>" % self.ref).encode("utf-8")
 

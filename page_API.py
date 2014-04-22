@@ -14,7 +14,7 @@ class page_API(object):
     """docstring for page_API"""
     APIs = []
     def __init__(self):
-        super(page_API, self).__init__()
+        object.__init__(self)
 
     @staticmethod
     def regist(cls):
@@ -153,14 +153,16 @@ class API_statistics(APIbase):
               "lobby": None,
               "after": None,
               "before": None,
-              "rule": None}
+              "rule": None,
+              "morethan": 30}
     def __init__(self):
         APIbase.__init__(self)
         
-    def work(self, name, limit, lobby, after, before, rule):
+    def work(self, name, limit, lobby, after, before, rule, morethan):
         before = datetimeParse(before)
         after = datetimeParse(after)
         limit = intParse(limit)
+        morethan = intParse(morethan)
         params = list()
         params.append(name)
         params.append(str(limit))
@@ -184,8 +186,8 @@ class API_statistics(APIbase):
                                      ruleCode = rule,
                                      after = after,
                                      before = before)
-            if len(refs) < 30:
-                return "error :need more than 30 logs to get statistics."
+            if len(refs) < morethan:
+                return "error :need more than %d logs to get statistics." % morethan
             jsons = tenhouDB.get_Jsons(refs)
             games = [tenhouLog.game(js) for js in jsons]
             ps    = tenhouStatistics.PlayerStatistic(games = games, playerName = name)
@@ -203,7 +205,9 @@ class API_hotIDs(APIbase):
     def __init__(self):
         APIbase.__init__(self)
         
-    def work(self, limit):
+    def work(self, limit, morethan):
+        limit = intParse(limit)
+        morethan = intParse(morethan)
         return json.dumps(
             [dict(name = row[0], count = row[1]) 
              for row in tenhouDB.get_hotIDs(limit = limit, morethan = morethan)])

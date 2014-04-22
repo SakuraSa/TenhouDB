@@ -17,8 +17,11 @@ function drawTable(data){
 $(document).ready(
     function(){
         var limit = getQueryStringByName("limit");
-        if(!limit) limit = 10;
-        $.get("../API?method=hotIDs&limit=" + limit, function(data,status){
+        var morethan = getQueryStringByName("morethan");
+        var getUrl = "../API?method=hotIDs";
+        if(morethan) getUrl = getUrl + "&limit=" + limit;
+        if(limit) getUrl = getUrl + "&morethan=" + morethan;
+        $.get(getUrl, function(data,status){
             if(status!='success'){
                 $("p#info").text("网络出错，请刷新").css("color", "red");
             }else{

@@ -1,3 +1,9 @@
+var playerName = getQueryStringByName("name");
+var lobby = getQueryStringByName("lobby");
+var limit = getQueryStringByName("limit");
+var before = getQueryStringByName("before");
+var after = getQueryStringByName("after");
+var morethan = getQueryStringByName("morethan");
 var jsonObj;
 
 var perStr = function(num){
@@ -280,6 +286,7 @@ var fillChart = function(js){
     );
 
     $('#sttree').tree({data:data, animate:true});
+    $('#sttree').tree('collapseAll');
 };
 
 $(document).ready(
@@ -291,6 +298,7 @@ $(document).ready(
             if(limit) APIurl += "&limit=" + limit;
             if(before) APIurl += "&before=" + before;
             if(after) APIurl += "&after=" + after;
+            if(morethan) APIurl += "&morethan=" + morethan;
             $("p#info").text("Loading...");
             $.get(APIurl, function(data,status){
                 if(status=='success'){
