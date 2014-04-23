@@ -218,3 +218,4 @@ pip-log.txt
 test.py
 *.db
 DBbackup/
+nohup.out
