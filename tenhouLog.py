@@ -357,6 +357,11 @@ class log(object):
             return []
         else:
             return [lst[4:] for lst in self._resultObj[2::2]]
+
+    @property
+    def yakuNames(self):
+        return [[n[:-4] for n in yakus if not u'\u30c9\u30e9' in n]
+                for yakus in self.yakus]
     
     @property
     def gameWindIndex(self):

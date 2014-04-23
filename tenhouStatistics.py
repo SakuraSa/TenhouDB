@@ -136,6 +136,8 @@ class PlayerStatistic(object):
         self.richi_otherZimo         = Statistic()          #立直_被自摸
         self.richi_draw              = Statistic()          #立直_流局
 
+        self.yakus = dict()
+
         for game in self.games:
             playerIndex = game.getPlayerIndex_ByName(self.playerName)
             if playerIndex == -1:
@@ -197,6 +199,11 @@ class PlayerStatistic(object):
                     self.winGame_score.add(scoreChange)
                     self.winGame_round.add(endRound)
                     self.winGame_dama.add(isDama and scoreChange)
+                    for i in range(len(log.changeScore)):
+                        if log.changeScore[i][playerIndex] > 0:
+                            for yaku in log.yakuNames[i]:
+                                self.yakus[yaku] = self.yakus.get(yaku, 0) + 1
+
                 self.fulu.add(isFulu)
                 if isFulu:
                     self.fulu_zimo.add(isZimo and scoreChange)
@@ -330,6 +337,7 @@ class PlayerStatistic(object):
             richi_otherZimo        = dict(avg = self.richi_otherZimo.avg_not_zero(),
                                           min = self.richi_otherZimo.min(),
                                           per = self.richi_otherZimo.avg_bool()),
+            yakus                  = [[self.yakus[yaku], yaku] for yaku in self.yakus],
         )
 
     def json(self):
@@ -388,4 +396,10 @@ if __name__ == "__main__":
     print "richi_chong                :", "per =", ps.richi_chong.avg_bool(), "; avg =", ps.richi_chong.avg_not_zero(), "; max =", ps.richi_chong.min()
     print "richi_draw                 :", "per =", ps.richi_draw.avg_bool(), "; avg =", ps.richi_draw.avg_not_zero(), "; max =", ps.richi_draw.max()
     print "richi_otherZimo            :", "per =", ps.richi_otherZimo.avg_bool(), "; avg =", ps.richi_otherZimo.avg_not_zero(), "; max =", ps.richi_otherZimo.min()
-
+    print ""
+    print "Yakus:"
+    order = [(ps.yakus[yaku], yaku) for yaku in ps.yakus]
+    order.sort(reverse=True)
+    s = ps.winGame.sum()
+    for pair in order:
+        print "%4d" % pair[0], "%6s" % ("%.2f" % (pair[0] * 100.0 / s)) + "%", ("%10s" % pair[1]).encode('utf-8')

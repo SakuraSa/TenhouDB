@@ -18,6 +18,61 @@ var inStr = function(num){
     if(!num) return "0";
     return "" + Math.floor(num);
 };
+var radar_number = function(num, maxV, minV, length){
+    if(num < minV) num = minV;
+    if(num > maxV) num = maxV;
+    return (num - minV) * length / (maxV -minV);
+};
+
+
+var fillRadar = function(js){
+    var container = document.getElementById("radar_container");
+    var radar_length = 10;
+    var dt = { label : decodeURI(playerName),
+               data  : [[0, radar_number(js.winGame.avg, 0.32, 0.15, radar_length)], 
+                        [1, radar_number(1 - js.fulu.avg, 0.80, 0.50, radar_length)], 
+                        [2, radar_number(js.winGame_score.avg, 8000, 5000, radar_length)], 
+                        [3, radar_number(1 - js.chong.avg, 0.90, 0.75, radar_length)], 
+                        [4, radar_number(js.dora_inner.avg, 0.35, 0.085, radar_length)], 
+                        [5, radar_number(20 - js.winGame_round.avg, 9.5, 7.5, radar_length)]] };
+    var ticks =  [
+        [0, "和了"],
+        [1, "和门"],
+        [2, "和点"],
+        [3, "防御"],
+        [4, "里宝"],
+        [5, "和巡"]
+    ];
+    var graph = Flotr.draw(container, [ dt ], {
+        radar : { show : true}, 
+        grid  : { circular : true, minorHorizontalLines : true}, 
+        yaxis : { min : 0, max : radar_length, minorTickFreq : 2}, 
+        xaxis : { ticks : ticks},
+        mouse : { 
+            track : true,
+            lineColor: 'purple',
+            position: 'sw',
+            trackFormatter: function(e) {
+                var i = Math.floor(e.x);
+                if(i == 0){
+                    return "胜率: " + perStr(js.winGame.avg);
+                }else if(i == 1){
+                    return "门清率: " + perStr(1 - js.fulu.avg);
+                }else if(i == 2){
+                    return "胜场平均得点: " + inStr(js.winGame_score.avg);
+                }else if(i == 3){
+                    return "铳率: " + perStr(js.chong.avg);
+                }else if(i == 4){
+                    return "平均里dora数: " + flStr(js.dora_inner.avg);
+                }else if(i == 5){
+                    return "平均和巡: " + flStr(js.winGame_round.avg);
+                }
+                return "unknow";
+            }
+    }
+    });
+
+};
 
 var fillChart = function(js){
     var data = [];
@@ -285,6 +340,21 @@ var fillChart = function(js){
         ]}
     );
 
+    if(js.yakus){
+        var yakus = js.yakus.sort(function(a, b){return b[0] - a[0];});
+        var ch = [];
+        for(i=0;i<yakus.length;i++){
+            var pair = yakus[i];
+            ch.push(
+                {text: pair[1], children: [
+                    {text: "频率: " + perStr(pair[0] / js.winGame.len)},
+                    {text: "总计: " + inStr(pair[0])},
+                ]}
+            );
+        }
+        data.push({text: "役", children: ch});
+    }
+
     $('#sttree').tree({data:data, animate:true});
     $('#sttree').tree('collapseAll');
 };
@@ -307,6 +377,7 @@ $(document).ready(
                     }else{
                         $("p#info").text("");
                         jsonObj = JSON.parse(data);
+                        fillRadar(jsonObj);
                         fillChart(jsonObj);
                     }
                 }else{
