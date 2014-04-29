@@ -132,6 +132,7 @@ class API_logChart(APIbase):
         dic["logs"]      = [dict(name           = log.name, 
                                  isDraw         = log.isDraw,
                                  isZimo         = log.isSomeoneZimo(),
+                                 isDama         = [log.isDama(i) for i in range(dic["playerSum"])],
                                  winnerIndex    = log.winnerIndex,
                                  loserIndex     = log.loserIndex,
                                  startScore     = log.startScore,

@@ -118,8 +118,10 @@ var gameDes = function(jsonChart, index){
     for(var i=0;i<log.changeScore.length;i++){
         if(!log.isDraw){
             var subtitle = "";
-            var winner = jsonChart.players[log.winnerIndex[i]].name;
+            var winnerIndex = log.winnerIndex[i];
+            var winner = jsonChart.players[winnerIndex].name;
             subtitle += winner + " " + log.changeScoreDes[i];
+            if(log.isDama[winnerIndex]) subtitle += " 默听";
             if(log.isZimo){
                 subtitle += " 自摸";
                 con.append($("<h3 id='subtitle_win'></h3>").text(subtitle));

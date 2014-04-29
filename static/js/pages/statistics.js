@@ -29,12 +29,12 @@ var fillRadar = function(js){
     var container = document.getElementById("radar_container");
     var radar_length = 10;
     var dt = { label : decodeURI(playerName),
-               data  : [[0, radar_number(js.winGame.avg, 0.32, 0.15, radar_length)], 
-                        [1, radar_number(1 - js.fulu.avg, 0.80, 0.50, radar_length)], 
-                        [2, radar_number(js.winGame_score.avg, 8000, 5000, radar_length)], 
-                        [3, radar_number(1 - js.chong.avg, 0.90, 0.75, radar_length)], 
-                        [4, radar_number(js.dora_inner.avg, 0.35, 0.085, radar_length)], 
-                        [5, radar_number(20 - js.winGame_round.avg, 9.5, 7.5, radar_length)]] };
+               data  : [[0, radar_number(js.winGame.avg, 0.30, 0.15, radar_length)], 
+                        [1, radar_number(1 - js.winGame_fulu.per, 0.70, 0.35, radar_length)], 
+                        [2, radar_number(js.winGame_score.avg, 7500, 5000, radar_length)], 
+                        [3, radar_number(1 - js.chong.avg, 0.90, 0.80, radar_length)], 
+                        [4, radar_number(js.dora_inner.avg, 0.25, 0.09, radar_length)], 
+                        [5, radar_number(20 - js.winGame_round.avg, 9.8, 8.5, radar_length)]] };
     var ticks =  [
         [0, "和了"],
         [1, "和门"],
