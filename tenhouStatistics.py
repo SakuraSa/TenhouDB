@@ -114,6 +114,7 @@ class PlayerStatistic(object):
         self.winGame_round           = Statistic()          #和了_巡数
         self.winGame_dama            = Statistic()          #和了_默听
         self.fulu                    = Statistic()          #副露
+        self.fulu_winGame            = Statistic()          #副露_和了
         self.fulu_zimo               = Statistic()          #副露_自摸
         self.fulu_rong               = Statistic()          #副露_荣
         self.fulu_chong              = Statistic()          #副露_铳
@@ -129,12 +130,14 @@ class PlayerStatistic(object):
         self.otherZimo_score         = Statistic()          #被自摸_点数
         self.richi                   = Statistic()          #立直
         self.richi_score             = Statistic()          #立直_点数
+        self.richi_winGame           = Statistic()          #立直_和了
         self.richi_zimo              = Statistic()          #立直_自摸
         self.richi_rong              = Statistic()          #立直_荣
         self.richi_yifa              = Statistic()          #立直_一发
         self.richi_chong             = Statistic()          #立直_放铳
         self.richi_otherZimo         = Statistic()          #立直_被自摸
         self.richi_draw              = Statistic()          #立直_流局
+        self.richi_inner_dora        = Statistic()          #立直_里Dora
 
         self.yakus = dict()
 
@@ -210,6 +213,7 @@ class PlayerStatistic(object):
                     self.fulu_rong.add(isRong and scoreChange)
                     self.fulu_chong.add(isChong and scoreChange)
                     self.fulu_score.add(scoreChange)
+                    self.fulu_winGame.add(isWin and scoreChange)
                 self.chong.add(isChong)
                 if isChong:
                     self.chong_fulu.add(isFulu and scoreChange)
@@ -225,12 +229,15 @@ class PlayerStatistic(object):
                 self.richi.add(isRichi)
                 if isRichi:
                     self.richi_score.add(scoreChange)
+                    self.richi_winGame.add(isWin and scoreChange)
                     self.richi_zimo.add(isZimo and scoreChange)
                     self.richi_rong.add(isRong and scoreChange)
                     self.richi_yifa.add(isYifa and scoreChange)
                     self.richi_chong.add(isChong and scoreChange)
                     self.richi_otherZimo.add(isOtherZimo and scoreChange)
                     self.richi_draw.add(isDraw and scoreChange)
+                    if isWin:
+                        self.richi_inner_dora.add(log.dora_inner[index])
 
     def dict(self):
         return dict(
@@ -283,6 +290,7 @@ class PlayerStatistic(object):
                                           min = self.winGame_round.min()),
             fulu                   = dict(avg = self.fulu.avg(),
                                           len = self.fulu.sum()),
+            fulu_winGame           = dict(per = self.fulu_winGame.avg_bool()),
             fulu_score             = dict(avg = self.fulu_score.avg(),
                                           max = self.fulu_score.max(),
                                           min = self.fulu_score.min()),
@@ -318,6 +326,7 @@ class PlayerStatistic(object):
                                           min = self.otherZimo_score.min()),
             richi                  = dict(avg = self.richi.avg(),
                                           len = self.richi.sum()),
+            richi_winGame          = dict(per = self.richi_winGame.avg_bool()),
             richi_score            = dict(avg = self.richi_score.avg(),
                                           min = self.richi_score.min(),
                                           max = self.richi_score.max()),
@@ -337,6 +346,8 @@ class PlayerStatistic(object):
             richi_otherZimo        = dict(avg = self.richi_otherZimo.avg_not_zero(),
                                           min = self.richi_otherZimo.min(),
                                           per = self.richi_otherZimo.avg_bool()),
+            richi_inner_dora       = dict(avg = self.richi_inner_dora.avg(),
+                                          max = self.richi_inner_dora.max()),
             yakus                  = [[self.yakus[yaku], yaku] for yaku in self.yakus],
         )
 

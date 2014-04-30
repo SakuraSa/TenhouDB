@@ -8,11 +8,11 @@ var jsonObj;
 
 var perStr = function(num){
     if(!num) return "0%";
-    return Math.floor(num*10000) / 100 + "%";
+    return Math.floor(num*1000000) / 10000 + "%";
 };
 var flStr = function(num){
     if(!num) return "0";
-    return "" + Math.floor(num*100) / 100;
+    return "" + Math.floor(num*10000) / 10000;
 };
 var inStr = function(num){
     if(!num) return "0";
@@ -33,8 +33,8 @@ var fillRadar = function(js){
                         [1, radar_number(1 - js.winGame_fulu.per, 0.70, 0.35, radar_length)], 
                         [2, radar_number(js.winGame_score.avg, 7500, 5000, radar_length)], 
                         [3, radar_number(1 - js.chong.avg, 0.90, 0.80, radar_length)], 
-                        [4, radar_number(js.dora_inner.avg, 0.25, 0.09, radar_length)], 
-                        [5, radar_number(20 - js.winGame_round.avg, 9.8, 8.5, radar_length)]] };
+                        [4, radar_number(js.richi_inner_dora.avg, 0.8, 0.3, radar_length)], 
+                        [5, radar_number(20 - js.winGame_round.avg, 10.0, 7.0, radar_length)]] };
     var ticks =  [
         [0, "和了"],
         [1, "和门"],
@@ -215,6 +215,7 @@ var fillChart = function(js){
     data.push(
         {text: "副露", children: [
             {text: "频率: " + perStr(js.fulu.avg)},
+            {text: "胜率: " + perStr(js.fulu_winGame.per)},
             {text: "得分", children: [
                 {text: "平均: " + flStr(js.fulu_score.avg)},
                 {text: "最大: " + inStr(js.fulu_score.max)},
@@ -294,6 +295,7 @@ var fillChart = function(js){
     data.push(
         {text: "立直", children: [
             {text: "频率: " + perStr(js.richi.avg)},
+            {text: "胜率: " + perStr(js.richi_winGame.per)},
             {text: "得分", children: [
                 {text: "平均: " + flStr(js.richi_score.avg)},
                 {text: "最大: " + inStr(js.richi_score.max)},
