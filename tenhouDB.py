@@ -94,7 +94,11 @@ def downloadLog(url):
         raise Exception("Can not connect with %s" % url)
     if req.text.strip() == "INVALID PATH":
         raise Exception("Return Unexpected text: %s" % req.text.strip())
-    obj = req.json()
+    try:
+        obj = req.json()
+    except Exception, e:
+        raise Exception("unexcepted returns [%s]" % req.text)
+    
     while(not obj["name"][-1]):
         obj["name"].pop()
     if len(obj["name"]) != 4:
@@ -229,5 +233,4 @@ def get_hotIDs(limit = 50, morethan = 30):
         limit ?""", (morethan, limit, )).fetchall()
         
 if __name__ == "__main__":
-    for js in get_Jsons(get_refs(name = "Rnd495")):
-        print js["ref"], (" vs ".join(js["name"])).encode("utf-8")
+    addLog('2014050117gm-0009-6140-68483c67')

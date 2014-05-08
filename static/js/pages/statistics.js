@@ -57,13 +57,13 @@ var fillRadar = function(js){
                 if(i == 0){
                     return "胜率: " + perStr(js.winGame.avg);
                 }else if(i == 1){
-                    return "门清率: " + perStr(1 - js.fulu.avg);
+                    return "门清和了率: " + perStr(1 - js.fulu.avg);
                 }else if(i == 2){
                     return "胜场平均得点: " + inStr(js.winGame_score.avg);
                 }else if(i == 3){
                     return "铳率: " + perStr(js.chong.avg);
                 }else if(i == 4){
-                    return "平均里dora数: " + flStr(js.dora_inner.avg);
+                    return "平均立直和了里dora数: " + flStr(js.richi_inner_dora.avg);
                 }else if(i == 5){
                     return "平均和巡: " + flStr(js.winGame_round.avg);
                 }
@@ -296,6 +296,7 @@ var fillChart = function(js){
         {text: "立直", children: [
             {text: "频率: " + perStr(js.richi.avg)},
             {text: "胜率: " + perStr(js.richi_winGame.per)},
+            {text: "胜场里dora: " + flStr(js.richi_inner_dora.avg)},
             {text: "得分", children: [
                 {text: "平均: " + flStr(js.richi_score.avg)},
                 {text: "最大: " + inStr(js.richi_score.max)},

@@ -357,12 +357,10 @@ class PlayerStatistic(object):
 if __name__ == "__main__":
     import tenhouDB
 
-    playerName = u"Rnd495"
+    playerName = u"pleuvoir"
     jsons = tenhouDB.get_Jsons(tenhouDB.get_refs(
         name = playerName, 
-        limit = 1000, 
-        after = datetime.datetime(year=2014, month=3, day=1),
-        lobby = "6140"))
+        limit = 1000))
     games = [game(js) for js in jsons]
     ps    = PlayerStatistic(games = games, playerName = playerName)
 
@@ -407,6 +405,7 @@ if __name__ == "__main__":
     print "richi_chong                :", "per =", ps.richi_chong.avg_bool(), "; avg =", ps.richi_chong.avg_not_zero(), "; max =", ps.richi_chong.min()
     print "richi_draw                 :", "per =", ps.richi_draw.avg_bool(), "; avg =", ps.richi_draw.avg_not_zero(), "; max =", ps.richi_draw.max()
     print "richi_otherZimo            :", "per =", ps.richi_otherZimo.avg_bool(), "; avg =", ps.richi_otherZimo.avg_not_zero(), "; max =", ps.richi_otherZimo.min()
+    print "richi_inner_dora           :", "avg =", ps.richi_inner_dora.avg()
     print ""
     print "Yakus:"
     order = [(ps.yakus[yaku], yaku) for yaku in ps.yakus]
