@@ -6,6 +6,7 @@ import tenhouDB
 import tenhouLog
 import tenhouStatistics
 import datetime
+import time
 import json
 import re
 import hashlib
@@ -41,6 +42,7 @@ class APIbase(object):
         object.__init__(self)
 
     def __call__(self, webInput):
+        start = time.time()
         kargs = dict()
         for key in self.params:
             value = webInput.get(key, None)
@@ -54,7 +56,9 @@ class APIbase(object):
                 kargs[key] = self.option[key]
             else:
                 kargs[key] = value
-        return self.work(**kargs)
+        ret = self.work(**kargs)
+        print "API[%s:%s] called. Cost %fs." % (self.name, str(webInput), time.time() - start)
+        return ret
 
     def work(self, **kargs):
         return "error: abstract method called."
@@ -150,23 +154,27 @@ class API_statistics(APIbase):
     """docstring for API_statistics"""
     name   = "statistics"
     params = ["name"]
-    option = {"limit": 50,
-              "lobby": None,
-              "after": None,
-              "before": None,
-              "rule": None,
-              "morethan": 30}
+    option = {"limit"    : 50,
+              "offset"   : 0,
+              "lobby"    : None,
+              "after"    : None,
+              "before"   : None,
+              "rule"     : None,
+              "morethan" : 30,
+              "updated"  : 1}
     def __init__(self):
         APIbase.__init__(self)
         
-    def work(self, name, limit, lobby, after, before, rule, morethan):
+    def work(self, name, limit, lobby, after, before, rule, morethan, offset, updated):
         before = datetimeParse(before)
         after = datetimeParse(after)
         limit = intParse(limit)
+        offset = intParse(offset)
         morethan = intParse(morethan)
         params = list()
         params.append(name)
         params.append(str(limit))
+        params.append(str(offset))
         if not after is None:
             params.append(after.ctime())
         if not before is None:
@@ -183,6 +191,7 @@ class API_statistics(APIbase):
         else:
             refs = tenhouDB.get_refs(name = name,
                                      limit = limit,
+                                     offset = offset,
                                      lobby = lobby,
                                      ruleCode = rule,
                                      after = after,
@@ -193,7 +202,7 @@ class API_statistics(APIbase):
             games = [tenhouLog.game(js) for js in jsons]
             ps    = tenhouStatistics.PlayerStatistic(games = games, playerName = name)
             js    = ps.json()
-            tenhouDB.set_statistics_cache(name = name, hashs = hashs, json = js)
+            tenhouDB.set_statistics_cache(name = name, hashs = hashs, json = js, updated = updated)
             return js
 
 @page_API.regist

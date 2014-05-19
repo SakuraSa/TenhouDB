@@ -118,7 +118,9 @@ def addLog(ref):
         for name in obj["name"]:
             cursor.execute(r"insert into logs_name (ref, name) values (?, ?)", 
                            (obj["ref"], name))
-            cursor.execute(r"delete from statistics_cache where name = ?", (name, ))
+            cursor.execute(r"update statistics_cache set updated = updated - 1 where name = ? and updated > 1", (name, ))
+            cursor.execute(r"delete from statistics_cache where name = ? and updated = 1" , (name, ))
+
         database.commit()
         return get_Json(obj["ref"])
     else:
@@ -135,7 +137,7 @@ def addLogs(refString):
     return
 
 @databaseOperation
-def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, limit = 10):
+def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, limit = 10, offset = 0):
     sqlparam = [name]
     queryParam = ["name = ?"]
     if not after is None:
@@ -151,15 +153,15 @@ def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, l
         sqlparam.append(ruleCode)
         queryParam.append("rulecode = ?")
     sqlparam.append(limit)
+    sqlparam.append(offset)
     sqlcmd   = """
     select logs.ref 
     from logs inner join logs_name 
         on logs.ref = logs_name.ref 
     where %s
     order by logs.gameat desc
-    limit ?;
+    limit ? offset ?;
     """ % " and ".join(queryParam)
-
     resLst = list()
     for row in cursor.execute(sqlcmd, sqlparam).fetchall():
         resLst.append(row[0])
@@ -215,8 +217,8 @@ def get_statistics_cache(hashs):
         return None
 
 @databaseOperation
-def set_statistics_cache(name, hashs, json):
-    cursor.execute(r"insert into statistics_cache(name, hash, json) values (?, ?, ?)", (name, hashs, json))
+def set_statistics_cache(name, hashs, json, updated=1):
+    cursor.execute(r"insert into statistics_cache(name, hash, json, updated) values (?, ?, ?, ?)", (name, hashs, json, updated))
     database.commit()
 
 @databaseOperation
@@ -231,6 +233,10 @@ def get_hotIDs(limit = 50, morethan = 30):
         ) where CNT >= ? and not(name='NoName')
         order by CNT desc
         limit ?""", (morethan, limit, )).fetchall()
+
+@databaseOperation
+def clear_APIcache():
+    cursor.execute(r"delete from statistics_cache;")
         
 if __name__ == "__main__":
     addLog('2014050117gm-0009-6140-68483c67')

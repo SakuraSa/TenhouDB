@@ -1,9 +1,11 @@
 var playerName = getQueryStringByName("name");
 var lobby = getQueryStringByName("lobby");
 var limit = getQueryStringByName("limit");
+var offset = getQueryStringByName("offset");
 var before = getQueryStringByName("before");
 var after = getQueryStringByName("after");
 var morethan = getQueryStringByName("morethan");
+var updated = getQueryStringByName("updated");
 var jsonObj;
 
 var perStr = function(num){
@@ -25,16 +27,28 @@ var radar_number = function(num, maxV, minV, length){
 };
 
 
-var fillRadar = function(js){
+var fillRadar = function(js, jss){
     var container = document.getElementById("radar_container");
     var radar_length = 10;
-    var dt = { label : decodeURI(playerName),
-               data  : [[0, radar_number(js.winGame.avg, 0.30, 0.15, radar_length)], 
-                        [1, radar_number(1 - js.winGame_fulu.per, 0.70, 0.35, radar_length)], 
-                        [2, radar_number(js.winGame_score.avg, 7500, 5000, radar_length)], 
-                        [3, radar_number(1 - js.chong.avg, 0.90, 0.80, radar_length)], 
-                        [4, radar_number(js.richi_inner_dora.avg, 0.8, 0.3, radar_length)], 
-                        [5, radar_number(20 - js.winGame_round.avg, 10.0, 7.0, radar_length)]] };
+    var dt = [];
+    if(jss)
+        dt.push(  { label : decodeURI(playerName) + " 30盘前",
+                    data  : [[0, radar_number(jss.winGame.avg, 0.30, 0.15, radar_length)], 
+                             [1, radar_number(1 - jss.winGame_fulu.per, 0.70, 0.35, radar_length)], 
+                             [2, radar_number(jss.winGame_score.avg, 7500, 5000, radar_length)], 
+                             [3, radar_number(1 - jss.chong.avg, 0.90, 0.80, radar_length)], 
+                             [4, radar_number(jss.richi_inner_dora.avg, 0.8, 0.3, radar_length)], 
+                             [5, radar_number(20 - jss.winGame_round.avg, 10.0, 7.0, radar_length)]] });
+    dt.push(  { label : decodeURI(playerName),
+                data  : [[0, radar_number(js.winGame.avg, 0.30, 0.15, radar_length)], 
+                         [1, radar_number(1 - js.winGame_fulu.per, 0.70, 0.35, radar_length)], 
+                         [2, radar_number(js.winGame_score.avg, 7500, 5000, radar_length)], 
+                         [3, radar_number(1 - js.chong.avg, 0.90, 0.80, radar_length)], 
+                         [4, radar_number(js.richi_inner_dora.avg, 0.8, 0.3, radar_length)], 
+                         [5, radar_number(20 - js.winGame_round.avg, 10.0, 7.0, radar_length)]] });
+
+
+
     var ticks =  [
         [0, "和了"],
         [1, "和门"],
@@ -43,7 +57,7 @@ var fillRadar = function(js){
         [4, "里宝"],
         [5, "和巡"]
     ];
-    var graph = Flotr.draw(container, [ dt ], {
+    var graph = Flotr.draw(container, dt, {
         radar : { show : true}, 
         grid  : { circular : true, minorHorizontalLines : true}, 
         yaxis : { min : 0, max : radar_length, minorTickFreq : 2}, 
@@ -369,9 +383,11 @@ $(document).ready(
             if(playerName) APIurl += "&name=" + playerName;
             if(lobby) APIurl += "&lobby=" + lobby;
             if(limit) APIurl += "&limit=" + limit;
+            if(offset) APIurl += "&offset=" + offset;
             if(before) APIurl += "&before=" + before;
             if(after) APIurl += "&after=" + after;
             if(morethan) APIurl += "&morethan=" + morethan;
+            if(updated) APIurl += "&updated=" + updated;
             $("p#info").text("Loading...");
             $.get(APIurl, function(data,status){
                 if(status=='success'){
@@ -380,8 +396,20 @@ $(document).ready(
                     }else{
                         $("p#info").text("");
                         jsonObj = JSON.parse(data);
-                        fillRadar(jsonObj);
+                        fillRadar(jsonObj, null);
                         fillChart(jsonObj);
+                        if(!offset && !limit && !updated)
+                            $.get(APIurl + "&offset=30&limit=100&updated=5", function(data,status){
+                                if(status=='success'){
+                                    if(data.substring(0,5) == "error"){
+                                    }else{
+                                        j02 = JSON.parse(data);
+                                        fillRadar(jsonObj, j02);
+                                    }
+                                }else{
+                                    $("p#info").text(data);
+                                }
+                            });
                     }
                 }else{
                     $("p#info").text(data);

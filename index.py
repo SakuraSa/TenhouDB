@@ -11,6 +11,7 @@ import tenhouLog
 import page_API
 
 import DB_updater
+tenhouDB.clear_APIcache()
 
 class GetIcon:
     def GET(self):
