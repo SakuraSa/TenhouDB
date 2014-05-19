@@ -17,10 +17,6 @@ version   = "ver0.001"
 database  = sqlite3.connect(dbname)
 cursor    = database.cursor()
 
-#clear the API chache
-cursor.execute(r'delete from statistics_cache')
-database.commit()
-
 #get database version and do backup
 if cursor.execute(r"SELECT COUNT(*) as CNT FROM sqlite_master where type='table' and name='dbupdate';").fetchall()[0][0]:
     version = cursor.execute(r"SELECT value FROM dbupdate where key='version' limit 1").fetchall()[0][0]
