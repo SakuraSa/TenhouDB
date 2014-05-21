@@ -10,6 +10,7 @@ import time
 import json
 import re
 import hashlib
+import requests
 
 class page_API(object):
     """docstring for page_API"""
@@ -76,29 +77,31 @@ class API_APIList(APIbase):
         return json.dumps(
             [dict(name=api.name, 
                 params=api.params, 
-                option=api.option) for api in page_API.APIs]
-            )
+                option=api.option) for api in page_API.APIs])
 
 @page_API.regist
 class API_createLog(APIbase):
     """docstring for API_createLog"""
     name   = "createLog"
     params = ["ref"]
-    option = {"getJson": False}
+    option = {"getjson": False,
+              "baseUrl": None}
     def __init__(self):
         APIbase.__init__(self)
             
-    def work(self, ref, getJson):
+    def work(self, ref, getjson, baseUrl):
         res = tenhouDB.ref_regex.findall(ref)
         if not res:
             return "error: illigal input of ref"
         res = res[0]
         obj = None
+        if baseUrl and not baseUrl.endswith('/'):
+            baseUrl += "/"
         try:
-            obj = tenhouDB.addLog(ref = res)
+            obj = tenhouDB.addLog(ref = res, baseUrl = baseUrl)
         except Exception, e:
-            return "error: %s", (e, )
-        if getJson:
+            return "error: %s" % (e, )
+        if getjson:
             return json.dumps(obj, cls=CJsonEncoder)
         else:
             return "ok"
@@ -122,7 +125,7 @@ class API_logChart(APIbase):
             obj = tenhouDB.addLog(ref = res)
             game = tenhouLog.game(obj)
         except Exception, e:
-            return "error: %s", (e, )
+            return "error: %s" % (e, )
         dic = dict()
         dic["playerSum"] = len(game.players)
         dic["players"]   = [dict(name           = pl.name, 
@@ -227,16 +230,31 @@ class API_clone(APIbase):
     """docString for API_clone"""
     name   = "clone"
     params = []
-    option = {"ref": None}
+    option = {"action": "help",
+              "remote": None}
 
     def __init(self):
         APIbase.__init__(self)
 
-    def work(self, ref):
-        if ref:
-            return json.dumps(tenhouDB.get_Ori_log(ref))
-        else:
+    def work(self, action, remote):
+        if action == "help":
+            return """
+clone actions:
+index action   url
+1.    help     /API?method=clone&action=help
+2.    list     /API?method=clone&action=list
+3.    remote   /API?method=clone&action=remote&remote=remote Website
+"""
+        elif action == "list":
             return json.dumps(tenhouDB.get_all_refs())
+        elif action == "remote":
+            refUrl = "http://%s/API?method=createLog&getjson=true&ref=" % remote
+            lstUrl = "http://%s/API?method=clone&action=list" % remote
+            remoteLst = requests.get(lstUrl).json()
+            localLst = tenhouDB.get_all_refs()
+            needUpdateLst = [ref for ref in remoteLst if not ref in localLst]
+            tenhouDB.addLogs(needUpdateLst, refUrl)
+            return json.dumps(needUpdateLst)
 
 
 def datetimeParse(text):

@@ -37,15 +37,6 @@ class tenhouCreateMutiLogs:
     def GET(self):
         return render.base( render.tenhouCreateMutiLogs() )
 
-class teamworkStatistics:
-    def GET(self):
-        return render.base( render.teamworkStatistics() )
-
-class lastLogs:
-    def GET(self):
-        refs = tenhouDB.get_lastRefs()
-        return render.base( render.logList([tenhouDB.get_Json(ref) for ref in refs]) )
-
 class playerLogs:
     def GET(self):
         name = web.input().get('name', "")
@@ -108,11 +99,9 @@ urls  = ("/?", "main_page",
          "/main_page", "main_page",
          "/favicon.ico", "GetIcon",
          "/tenhouCreateLog/?", "tenhouCreateLog",
-         "/lastLogs/?", "lastLogs", 
          "/playerLogs/?", "playerLogs",
          "/API/?", "API",
          "/tenhouCreateMutiLogs/?", "tenhouCreateMutiLogs",
-         "/teamworkStatistics/?", "teamworkStatistics",
          "/statistics/?", "statistics",
          "/websiteLogs", "websiteLogs",
          "/agari/?", "agari",
@@ -121,11 +110,9 @@ urls  = ("/?", "main_page",
 pages = {"main_page": main_page,
          "GetIcon": GetIcon,
          "tenhouCreateLog": tenhouCreateLog,
-         "lastLogs": lastLogs, 
          "playerLogs": playerLogs,
          "API": page_API.page_API,
          "tenhouCreateMutiLogs": tenhouCreateMutiLogs,
-         "teamworkStatistics": teamworkStatistics,
          "statistics": statistics,
          "websiteLogs": websiteLogs,
          "agari": agari,

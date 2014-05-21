@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #coding=utf-8
 
+import time
 import datetime
 import threading
 import sqlite3
@@ -73,11 +74,14 @@ def get_info_from_ref(ref):
                 ruleStr  = ruleStr, 
                 lobby    = lobby)
 
-def downloadLog(url):
+def downloadLog(url, baseUrl = None):
     ref = ref_regex.findall(url)
     if not ref:
         raise Exception("Unexpected URL: %s" % url)
-    reqUrl = r"http://tenhou.net/5/mjlog2json.cgi?" + ref[0]
+    if not baseUrl:
+        reqUrl = r"http://tenhou.net/5/mjlog2json.cgi?" + ref[0]
+    else:
+        reqUrl = baseUrl + ref[0]
     headers = {
         "Accept": "*/*",
         "Accept-Encoding": "zh-CN,zh;q=0.8",
@@ -91,7 +95,7 @@ def downloadLog(url):
     }
     req = requests.get(reqUrl, headers = headers)
     if req.status_code != 200:
-        raise Exception("Can not connect with %s" % url)
+        raise Exception("Can not connect with %s" % reqUrl)
     if req.text.strip() == "INVALID PATH":
         raise Exception("Return Unexpected text: %s" % req.text.strip())
     try:
@@ -108,10 +112,10 @@ def downloadLog(url):
     return obj, req.text
 
 @databaseOperation
-def addLog(ref):
+def addLog(ref, baseUrl = None, noCommit = False):
     temp = cursor.execute(r'select ref from logs where ref = ?',(ref,)).fetchall()
     if not temp:
-        obj, text = downloadLog(r"http://tenhou.net/0/mjlog2json.cgi?" + ref)
+        obj, text = downloadLog(ref, baseUrl)
         info = get_info_from_ref(ref)
         cursor.execute(r"insert into logs (ref, json, gameat, rulecode, lobby, createat) values (?, ?, ?, ?, ?, ?)", 
                        (obj["ref"], text, info["date"], info["ruleCode"], info["lobby"], datetime.datetime.now()))
@@ -120,21 +124,22 @@ def addLog(ref):
                            (obj["ref"], name))
             cursor.execute(r"update statistics_cache set updated = updated - 1 where name = ? and updated > 1", (name, ))
             cursor.execute(r"delete from statistics_cache where name = ? and updated = 1" , (name, ))
-
-        database.commit()
+        if not noCommit:
+            database.commit()
         return get_Json(obj["ref"])
     else:
         return get_Json(temp[0][0])
 
-def addLogs(refString):
-    refs = ref_regex.findall(refString)
-    if refs:
-        for ref in refs:
-            try:
-                yield (True, addLog(ref))
-            except Exception, e:
-                yield (False, e)
-    return
+def addLogs(refs, baseUrl = None):
+    print "Adding %d logs..." % len(refs)
+    start = time.time()
+    counter = 0
+    for ref in refs:
+        counter += 1
+        addLog(ref, baseUrl, noCommit = True)
+        print "%4d/%4d %s compelet %fs cost." % (counter, len(refs), ref, time.time() - start)
+    database.commit()
+    print "All %d logs adding compele %fs cost." % (len(refs), time.time() - start)
 
 @databaseOperation
 def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, limit = 10, offset = 0):
