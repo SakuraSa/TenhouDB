@@ -74,6 +74,7 @@ def get_info_from_ref(ref):
                 ruleStr  = ruleStr, 
                 lobby    = lobby)
 
+@databaseOperation
 def downloadLog(url, baseUrl = None):
     ref = ref_regex.findall(url)
     if not ref:

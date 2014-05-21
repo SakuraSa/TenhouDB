@@ -69,17 +69,17 @@ var fillRadar = function(js, jss){
             trackFormatter: function(e) {
                 var i = Math.floor(e.x);
                 if(i == 0){
-                    return "胜率: " + perStr(js.winGame.avg);
+                    return "胜率: " + e.y;
                 }else if(i == 1){
-                    return "门清和了率: " + perStr(1 - js.fulu.avg);
+                    return "门清和了率: " + e.y;
                 }else if(i == 2){
-                    return "胜场平均得点: " + inStr(js.winGame_score.avg);
+                    return "胜场平均得点: " + e.y;
                 }else if(i == 3){
-                    return "铳率: " + perStr(js.chong.avg);
+                    return "铳率: " + e.y;
                 }else if(i == 4){
-                    return "平均立直和了里dora数: " + flStr(js.richi_inner_dora.avg);
+                    return "平均立直和了里dora数: " + e.y;
                 }else if(i == 5){
-                    return "平均和巡: " + flStr(js.winGame_round.avg);
+                    return "平均和巡: " + e.y;
                 }
                 return "unknow";
             }
