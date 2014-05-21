@@ -186,7 +186,7 @@ class API_statistics(APIbase):
             params.append(lobby)
         if not rule is None:
             params.append(rule)
-        joinstr = name.encode("utf-8") + ", " + ", ".join(params[1:])
+        joinstr = str(list(name)) + ", " + ", ".join(params[1:])
         hashs = hashlib.sha256(joinstr).hexdigest()
         cache = tenhouDB.get_statistics_cache(hashs = hashs)
         if cache:
