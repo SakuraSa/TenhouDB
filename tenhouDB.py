@@ -237,6 +237,19 @@ def get_hotIDs(limit = 50, morethan = 30):
 @databaseOperation
 def clear_APIcache():
     cursor.execute(r"delete from statistics_cache;")
+
+@databaseOperation
+def get_Ori_log(ref):
+    temp = cursor.execute(r"Select json From logs where ref = ? limit 1", (ref, )).fetchall()
+    if temp:
+        return temp[0][0]
+    else:
+        raise Exception("log <%s> not found." % ref)
+
+@databaseOperation
+def get_all_refs():
+    temp = cursor.execute(r"Select ref From logs").fetchall()
+    return [i[0] for i in temp]
         
 if __name__ == "__main__":
     addLog('2014050117gm-0009-6140-68483c67')

@@ -222,6 +222,22 @@ class API_hotIDs(APIbase):
             [dict(name = row[0], count = row[1]) 
              for row in tenhouDB.get_hotIDs(limit = limit, morethan = morethan)])
 
+@page_API.regist
+class API_clone(APIbase):
+    """docString for API_clone"""
+    name   = "clone"
+    params = []
+    option = {"ref": None}
+
+    def __init(self):
+        APIbase.__init__(self)
+
+    def work(self, ref):
+        if ref:
+            return json.dumps(tenhouDB.get_Ori_log(ref))
+        else:
+            return json.dumps(tenhouDB.get_all_refs())
+
 
 def datetimeParse(text):
     if text is None:
@@ -255,3 +271,5 @@ if __name__ == '__main__':
         print "params:", api.params
         print "option:", api.option
         print ""
+
+    

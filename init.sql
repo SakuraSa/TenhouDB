@@ -40,3 +40,12 @@ CREATE TABLE IF NOT EXISTS statistics_cache (
 
 CREATE INDEX IF NOT EXISTS name_index on statistics_cache(name);
 CREATE INDEX IF NOT EXISTS hash_index on statistics_cache(hash);
+
+CREATE TABLE IF NOT EXISTS dbupdate (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key char(40) NOT NULL,
+    value text NOT NULL,
+    attime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO dbupdate (key, value) VALUES('version', 'ver0.004')
