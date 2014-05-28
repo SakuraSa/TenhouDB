@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS statistics_cache (
     name char(40) NOT NULL,
     hash char(64) NOT NULL,
     json text NOT NULL,
-    updated INTEGER NOT NULL DEFAULT 0
+    updated INTEGER NOT NULL DEFAULT 0,
+    global boolean DEFAULT false
 );
 
 CREATE INDEX IF NOT EXISTS name_index on statistics_cache(name);

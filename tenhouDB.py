@@ -74,6 +74,8 @@ def get_info_from_ref(ref):
                 ruleStr  = ruleStr, 
                 lobby    = lobby)
 
+banRuleCodes = [u"0841"]
+
 @databaseOperation
 def downloadLog(url, baseUrl = None):
     ref = ref_regex.findall(url)
@@ -110,6 +112,8 @@ def downloadLog(url, baseUrl = None):
         raise Exception("Not 4 Player Game, skipped.")
     if not "sc" in obj:
         raise Exception("Game was stopped by host, skipped.")
+    if obj["ruleCode"] in banRuleCodes:
+        raise Exception("Not normal game rule %s" % obj["ruleCode"])
     return obj, req.text
 
 @databaseOperation
@@ -123,8 +127,8 @@ def addLog(ref, baseUrl = None, noCommit = False):
         for name in obj["name"]:
             cursor.execute(r"insert into logs_name (ref, name) values (?, ?)", 
                            (obj["ref"], name))
-            cursor.execute(r"update statistics_cache set updated = updated - 1 where name = ? and updated > 1", (name, ))
-            cursor.execute(r"delete from statistics_cache where name = ? and updated = 1" , (name, ))
+            cursor.execute(r"update statistics_cache set updated = updated - 1 where (name = ? or global) and updated > 1", (name, ))
+            cursor.execute(r"delete from statistics_cache where (name = ? or global) and updated = 1" , (name, ))
         if not noCommit:
             database.commit()
         return get_Json(obj["ref"])

@@ -8,7 +8,7 @@ import os
 import shutil
 import json
 
-lastVersion = "ver0.004"
+lastVersion = "ver0.005"
 
 dbname    = "tenhou.db"
 tempfile  = "temp.db"
@@ -126,7 +126,7 @@ else:
             database = sqlite3.connect(dbname)
             cursor = database.cursor() 
 
-            cursor.execute(r"ALTER TABLE statistics_cache ADD updated int DEFAULT 1")
+            cursor.execute(r"ALTER TABLE statistics_cache ADD updated INTEGER DEFAULT 1")
 
             cursor.execute(r"update dbupdate set value = ?, attime = ? where key = ?",
                 ("ver0.004", datetime.datetime.now(), "version"))
@@ -134,3 +134,30 @@ else:
             database.close()
             version = 'ver0.004'
             print "ok, database update to ver0.004."
+        elif version == "ver0.004":
+            """
+            ver0.004 => ver0.005
+            """
+
+            database = sqlite3.connect(dbname)
+            cursor = database.cursor() 
+
+            cursor.execute(r"ALTER TABLE statistics_cache ADD global boolean DEFAULT false")
+
+            cursor.execute(r"update dbupdate set value = ?, attime = ? where key = ?",
+                ("ver0.005", datetime.datetime.now(), "version"))
+
+            bans = [u"0841"]
+            counter = 0
+            for row in cursor.execute(r"select ref, rulecode from logs").fetchall():
+                ref, rulecode = row
+                if rulecode in bans:
+                    cursor.execute(r"delete from logs where ref = ?", (ref, ))
+                    cursor.execute(r"delete from logs_name where ref = ?", (ref, ))
+                    counter += 1
+                    print "info: [%4d] remove dirty data [%s]" % (counter, ref), rulecode
+
+            database.commit()
+            database.close()
+            version = 'ver0.005'
+            print "ok, database update to ver0.005."
