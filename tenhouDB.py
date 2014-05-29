@@ -112,8 +112,6 @@ def downloadLog(url, baseUrl = None):
         raise Exception("Not 4 Player Game, skipped.")
     if not "sc" in obj:
         raise Exception("Game was stopped by host, skipped.")
-    if obj["ruleCode"] in banRuleCodes:
-        raise Exception("Not normal game rule %s" % obj["ruleCode"])
     return obj, req.text
 
 @databaseOperation
@@ -122,6 +120,8 @@ def addLog(ref, baseUrl = None, noCommit = False):
     if not temp:
         obj, text = downloadLog(ref, baseUrl)
         info = get_info_from_ref(ref)
+        if info['ruleCode'] in banRuleCodes:
+            raise Exception("Not normal game rule %s" % obj["ruleCode"])
         cursor.execute(r"insert into logs (ref, json, gameat, rulecode, lobby, createat) values (?, ?, ?, ?, ?, ?)", 
                        (obj["ref"], text, info["date"], info["ruleCode"], info["lobby"], datetime.datetime.now()))
         for name in obj["name"]:
