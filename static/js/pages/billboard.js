@@ -1,11 +1,14 @@
 var jsonObj;
+var tops = parseInt(getQueryStringByName("top"));
+if(isNaN(tops)) tops = 20;
+
 var tags = [
     ["total.avg", "平均顺位", true],
-    ["winGame.avg", "平均和了率", true],
-    ["winGame_score.avg", "平均和了点", true],
-    ["chong.avg", "平均铳率", false],
-    ["richi.avg", "平均立直率", true],
-    ["winGame_round.avg", "平均和了巡", false]
+    ["winGame.avg", "平均和了率", false],
+    ["winGame_score.avg", "平均和了点", false],
+    ["chong.avg", "平均铳率", true],
+    ["richi.avg", "平均立直率", false],
+    ["winGame_round.avg", "平均和了巡", true]
 ];
 
 var loadTag = function(){
@@ -81,7 +84,7 @@ var showChart = function(name){
         avg += dtLst[i][0];
     avg = avg / dtLst.length;
 
-    for (i = 0; i < dtLst.length; i++) {
+    for (i = 0; i < dtLst.length && i < tops; i++) {
         point = [i, dtLst[i][0]];
         bars.data.push(point);
         markers.data.push(point);
