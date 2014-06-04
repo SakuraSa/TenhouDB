@@ -120,13 +120,20 @@ def addLog(ref, baseUrl = None, noCommit = False):
     if not temp:
         obj, text = downloadLog(ref, baseUrl)
         info = get_info_from_ref(ref)
+        ref = obj["ref"]
         if info['ruleCode'] in banRuleCodes:
             raise Exception("Not normal game rule %s" % obj["ruleCode"])
         cursor.execute(r"insert into logs (ref, json, gameat, rulecode, lobby, createat) values (?, ?, ?, ?, ?, ?)", 
-                       (obj["ref"], text, info["date"], info["ruleCode"], info["lobby"], datetime.datetime.now()))
-        for name in obj["name"]:
-            cursor.execute(r"insert into logs_name (ref, name) values (?, ?)", 
-                           (obj["ref"], name))
+                       (ref, text, info["date"], info["ruleCode"], info["lobby"], datetime.datetime.now()))
+        for i in range(len(obj["name"])):
+            name = obj['name'][i]
+            sex = obj['sx'][i]
+            rate = obj['rate'][i]
+            dan = obj['dan'][i]
+            score = obj['sc'][i * 2]
+            point = obj['sc'][i * 2 + 1]
+            cursor.execute(r"insert into logs_name (ref, name, sex, rate, dan, score, point) values (?, ?, ?, ?, ?, ?, ?)", 
+                           (ref, name, sex, rate, dan, score, point))
             cursor.execute(r"update statistics_cache set updated = updated - 1 where (name = ? or global) and updated > 1", (name, ))
             cursor.execute(r"delete from statistics_cache where updated = 1" , (name, ))
         if not noCommit:

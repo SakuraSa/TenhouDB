@@ -8,7 +8,7 @@ import os
 import shutil
 import json
 
-lastVersion = "ver0.005"
+lastVersion = "ver0.006"
 
 dbname    = "tenhou.db"
 tempfile  = "temp.db"
@@ -161,3 +161,46 @@ else:
             database.close()
             version = 'ver0.005'
             print "ok, database update to ver0.005."
+        elif version == "ver0.005":
+            """
+            ver0.005 => ver0.006
+            """
+
+            import json
+            database = sqlite3.connect(dbname)
+            cursor = database.cursor() 
+
+            cursor.execute(r"ALTER TABLE logs_name ADD sex char(1) DEFAULT 'M'")
+            cursor.execute(r"ALTER TABLE logs_name ADD rate float DEFAULT 1500")
+            cursor.execute(r"ALTER TABLE logs_name ADD dan char(16) DEFAULT 'unknow'")
+            cursor.execute(r"ALTER TABLE logs_name ADD score INTEGER DEFAULT 0")
+            cursor.execute(r"ALTER TABLE logs_name ADD point INTEGER DEFAULT 0")
+
+            allLogs = dict()
+            for row in cursor.execute(r"SELECT ref, json from logs").fetchall():
+                allLogs[row[0]] = json.loads(row[1])
+
+            for row in cursor.execute(r"SELECT ref, name from logs_name").fetchall():
+                ref, name = row
+                js = allLogs[ref]
+                playerIndex = 0
+                for i in range(len(js['name'])):
+                    if js['name'][i] == name:
+                        playerIndex = i
+                        break
+                sex = js['sx'][playerIndex]
+                rate = js['rate'][playerIndex]
+                dan = js['dan'][playerIndex]
+                score = js['sc'][playerIndex * 2]
+                point = js['sc'][playerIndex * 2 + 1]
+                cursor.execute(r"UPDATE logs_name SET sex = ?, rate = ?, dan = ?, score = ?, point = ? WHERE ref = ? AND name = ?",
+                    (sex, rate, dan, score, point, ref, name))
+
+            cursor.execute(r"update dbupdate set value = ?, attime = ? where key = ?",
+                ("ver0.006", datetime.datetime.now(), "version"))
+
+            database.commit()
+            database.close()
+
+            version = 'ver0.006'
+            print "ok, database update to ver0.006."

@@ -24,7 +24,12 @@ CREATE INDEX IF NOT EXISTS createat_index on logs(createat);
 CREATE TABLE IF NOT EXISTS logs_name (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ref char(40) NOT NULL,
-    name char(40) NOT NULL
+    name char(40) NOT NULL,
+    sex char(1) NOT NULL,
+    rate float NOT NULL,
+    dan char(16) NOT NULL,
+    score INTEGER NOT NULL,
+    point INTEGER NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS id_index on logs_name(id);
@@ -50,4 +55,4 @@ CREATE TABLE IF NOT EXISTS dbupdate (
     attime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT OR IGNORE INTO dbupdate (key, value) VALUES('version', 'ver0.004')
+INSERT OR IGNORE INTO dbupdate (key, value) VALUES('version', 'ver0.006')
