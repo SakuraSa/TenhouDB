@@ -272,4 +272,5 @@ def get_all_refs():
     return [i[0] for i in temp]
         
 if __name__ == "__main__":
-    print get_hotIDs()
+    clear_APIcache()
+    print "all cache cleared."

@@ -277,7 +277,7 @@ class API_billboard(APIbase):
         hotIDs = [row[0] for row in tenhouDB.get_hotIDs(limit=limit, morethan=morethan)]
         stDic = dict()
         for name in hotIDs:
-            refs = tenhouDB.get_refs(name)
+            refs = tenhouDB.get_refs(name, limit=1000)
             jsons = tenhouDB.get_Jsons(refs)
             games = [tenhouLog.game(obj) for obj in jsons]
             st = tenhouStatistics.PlayerStatistic(games, name).dict()
