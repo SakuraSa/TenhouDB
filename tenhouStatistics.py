@@ -357,7 +357,7 @@ class PlayerStatistic(object):
 if __name__ == "__main__":
     import tenhouDB
 
-    playerName = u"pleuvoir"
+    playerName = u"Rnd495"
     jsons = tenhouDB.get_Jsons(tenhouDB.get_refs(
         name = playerName, 
         limit = 1000))

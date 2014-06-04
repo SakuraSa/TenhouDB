@@ -41,12 +41,10 @@ class playerLogs:
     def GET(self):
         name = web.input().get('name', "")
         lobby = web.input().get('lobby', None)
-        limit = web.input().get('limit', "10")
+        limit = web.input().get('limit', "1000")
         ruleCode = web.input().get('rule', None)
-        if limit.isdigit():
-            limit = min(500, abs(int(limit)))
-        else:
-            limit = "10"
+        if not limit.isdigit():
+            limit = "1000"
         refs  = tenhouDB.get_refs(name = name, lobby = lobby, limit = limit)
         jsons = [tenhouDB.get_Json(ref) for ref in refs]
         return render.base( render.logList(jsons) )
@@ -90,6 +88,10 @@ class hotIDs:
     def GET(self):
         return render.base( render.hotIDs() )
 
+class billboard:
+    def GET(self):
+        return render.base( render.billboard() )
+
 t_globals = {
     'datestr': web.datestr, 
 }
@@ -105,7 +107,8 @@ urls  = ("/?", "main_page",
          "/statistics/?", "statistics",
          "/websiteLogs", "websiteLogs",
          "/agari/?", "agari",
-         "/hotIDs/?", "hotIDs")
+         "/hotIDs/?", "hotIDs",
+         "/billboard/?", "billboard")
 
 pages = {"main_page": main_page,
          "GetIcon": GetIcon,
@@ -116,7 +119,8 @@ pages = {"main_page": main_page,
          "statistics": statistics,
          "websiteLogs": websiteLogs,
          "agari": agari,
-         "hotIDs": hotIDs}
+         "hotIDs": hotIDs,
+         "billboard": billboard}
 
 app   = web.application(urls, pages)
 

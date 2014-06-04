@@ -261,7 +261,7 @@ class API_billboard(APIbase):
     """docString for API_billboard"""
     name   = "billboard"
     params = []
-    option = {"limit": 10,
+    option = {"limit": 100,
               "morethan": 30,
               "updated": 10}
 
