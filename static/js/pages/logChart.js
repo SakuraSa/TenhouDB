@@ -1,4 +1,5 @@
 var jsonObj;
+var refCode = getQueryStringByName("ref");
 
 var drawChart = function(jsonChart){
     var container, graph, ticks, datas, scMax, scMin;

@@ -128,7 +128,7 @@ def addLog(ref, baseUrl = None, noCommit = False):
             cursor.execute(r"insert into logs_name (ref, name) values (?, ?)", 
                            (obj["ref"], name))
             cursor.execute(r"update statistics_cache set updated = updated - 1 where (name = ? or global) and updated > 1", (name, ))
-            cursor.execute(r"delete from statistics_cache where (name = ? or global) and updated = 1" , (name, ))
+            cursor.execute(r"delete from statistics_cache where updated = 1" , (name, ))
         if not noCommit:
             database.commit()
         return get_Json(obj["ref"])
@@ -227,8 +227,11 @@ def get_statistics_cache(hashs):
         return None
 
 @databaseOperation
-def set_statistics_cache(name, hashs, json, updated=1):
-    cursor.execute(r"insert into statistics_cache(name, hash, json, updated) values (?, ?, ?, ?)", (name, hashs, json, updated))
+def set_statistics_cache(name, hashs, json, updated=1, Global=False):
+    cursor.execute(r"""
+        insert into 
+        statistics_cache(name, hash, json, updated, global) 
+        values (?, ?, ?, ?, ?)""", (name, hashs, json, updated, Global))
     database.commit()
 
 @databaseOperation
@@ -262,4 +265,4 @@ def get_all_refs():
     return [i[0] for i in temp]
         
 if __name__ == "__main__":
-    addLog('2014050117gm-0009-6140-68483c67')
+    print get_hotIDs()

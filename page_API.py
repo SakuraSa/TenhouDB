@@ -233,7 +233,7 @@ class API_clone(APIbase):
     option = {"action": "help",
               "remote": None}
 
-    def __init(self):
+    def __init__(self):
         APIbase.__init__(self)
 
     def work(self, action, remote):
@@ -255,6 +255,58 @@ index action   url
             needUpdateLst = [ref for ref in remoteLst if not ref in localLst]
             tenhouDB.addLogs(needUpdateLst, refUrl)
             return json.dumps(needUpdateLst)
+
+@page_API.regist
+class API_billboard(APIbase):
+    """docString for API_billboard"""
+    name   = "billboard"
+    params = []
+    option = {"limit": 10,
+              "morethan": 30,
+              "updated": 10}
+
+    def __init__(self):
+        APIbase.__init__(self)
+
+    def work(self, limit, morethan, updated):
+        hashs = hashlib.sha256("%s, %s" % (limit, morethan)).hexdigest()
+        cache = tenhouDB.get_statistics_cache(hashs = hashs)
+        if cache:
+            return cache
+
+        hotIDs = [row[0] for row in tenhouDB.get_hotIDs(limit=limit, morethan=morethan)]
+        stDic = dict()
+        for name in hotIDs:
+            refs = tenhouDB.get_refs(name)
+            jsons = tenhouDB.get_Jsons(refs)
+            games = [tenhouLog.game(obj) for obj in jsons]
+            st = tenhouStatistics.PlayerStatistic(games, name).dict()
+            stDic[name] = st
+
+        obj = stDic.values()[0]
+        bans = ['yakus', 'games']
+        subBans = ['groupPercent']
+
+        res = dict()
+        for tar in obj:
+            if tar in bans:
+                continue
+            for subTar in obj[tar]:
+                if subTar in subBans:
+                    continue
+                tarStr = "%s.%s" % (tar, subTar)
+                res[tarStr] = self.billboard(stDic, tarStr)
+
+        js = json.dumps(res)
+        tenhouDB.set_statistics_cache(name = name, hashs = hashs, json = js, updated = updated, Global = True)
+        return js
+
+
+    def billboard(self, stDic, path='total.avg', reverse=True):
+        prot, prop = path.split('.')
+        order = [(stDic[name][prot][prop], name) for name in stDic]
+        order.sort(reverse=reverse)
+        return order
 
 
 def datetimeParse(text):

@@ -27,7 +27,7 @@ class tenhouCreateLog:
                 if ref != res[0]:
                     web.seeother("../tenhouCreateLog?ref=%s" % res[0])
                 tenhouDB.addLog(res[0])
-                return render.base( render.tenhouCreateLog(render.logChart(ref)) )
+                return render.base( render.tenhouCreateLog(render.logChart()) )
             else:
                 return render.base( render.tenhouCreateLog(u"无法识别的地址: %s" % ref) )
         except Exception, e:
