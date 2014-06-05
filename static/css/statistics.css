@@ -3,3 +3,6 @@ div#radar_container {
     height: 480px;
     margin: 20px;
 }
+div#line_rate {
+    height:480px;
+}

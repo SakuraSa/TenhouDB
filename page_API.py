@@ -214,16 +214,24 @@ class API_hotIDs(APIbase):
     name   = "hotIDs"
     params = []
     option = {"limit": 50,
-              "morethan": 30}
+              "morethan": 30,
+              "updated": 25}
     def __init__(self):
         APIbase.__init__(self)
         
-    def work(self, limit, morethan):
+    def work(self, limit, morethan, updated):
         limit = intParse(limit)
         morethan = intParse(morethan)
-        return json.dumps(
-            [dict(name = row[0], count = row[1]) 
-             for row in tenhouDB.get_hotIDs(limit = limit, morethan = morethan)])
+        hashs = hashlib.sha256("%s, %s" % (limit, morethan)).hexdigest()
+        cache = tenhouDB.get_statistics_cache(hashs = hashs)
+        if cache:
+            return cache
+        else:
+            js = json.dumps(
+                [dict(name = row[0], count = row[1]) 
+                 for row in tenhouDB.get_hotIDs(limit = limit, morethan = morethan)])
+            tenhouDB.set_statistics_cache(name = "", hashs = hashs, json = js, updated = updated)
+            return js
 
 @page_API.regist
 class API_clone(APIbase):
@@ -263,7 +271,7 @@ class API_billboard(APIbase):
     params = []
     option = {"limit": 100,
               "morethan": 30,
-              "updated": 10}
+              "updated": 50}
 
     def __init__(self):
         APIbase.__init__(self)
@@ -298,7 +306,7 @@ class API_billboard(APIbase):
                 res[tarStr] = self.billboard(stDic, tarStr)
 
         js = json.dumps(res)
-        tenhouDB.set_statistics_cache(name = name, hashs = hashs, json = js, updated = updated, Global = True)
+        tenhouDB.set_statistics_cache(name = "", hashs = hashs, json = js, updated = updated, Global = True)
         return js
 
 
@@ -308,6 +316,27 @@ class API_billboard(APIbase):
         order.sort(reverse=reverse)
         return order
 
+@page_API.regist
+class API_rateHistroy(APIbase):
+    """docstring for API_rateHistroy"""
+    name   = "rateHistroy"
+    params = ["name"]
+    option = {"limit": 100,
+              "updated": 1}
+
+    def __init__(self):
+        APIbase.__init__(self)
+
+    def work(self, name, limit, updated):
+        limit = intParse(limit)
+        hashs = hashlib.sha256("%s, %s" % (str(list(name)), limit)).hexdigest()
+        cache = tenhouDB.get_statistics_cache(hashs = hashs)
+        if cache:
+            return cache
+        else:
+            js = json.dumps(tenhouDB.get_rate_and_date(name = name, limit = limit))
+            tenhouDB.set_statistics_cache(name = name, hashs = hashs, json = js, updated = updated, Global = False)
+            return js
 
 def datetimeParse(text):
     if text is None:

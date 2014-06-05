@@ -135,7 +135,7 @@ def addLog(ref, baseUrl = None, noCommit = False):
             cursor.execute(r"insert into logs_name (ref, name, sex, rate, dan, score, point) values (?, ?, ?, ?, ?, ?, ?)", 
                            (ref, name, sex, rate, dan, score, point))
             cursor.execute(r"update statistics_cache set updated = updated - 1 where (name = ? or global) and updated > 1", (name, ))
-            cursor.execute(r"delete from statistics_cache where updated = 1" , (name, ))
+            cursor.execute(r"delete from statistics_cache where updated = 1")
         if not noCommit:
             database.commit()
         return get_Json(obj["ref"])
@@ -271,6 +271,15 @@ def get_Ori_log(ref):
 def get_all_refs():
     temp = cursor.execute(r"Select ref From logs").fetchall()
     return [i[0] for i in temp]
+
+@databaseOperation
+def get_rate_and_date(name, limit, lobby='0000'):
+    return cursor.execute(r"""
+        select rate, gameat
+        from logs join logs_name on logs.ref = logs_name.ref
+        where name = ? and lobby = ?
+        order by gameat desc limit ?
+    """, (name, lobby, limit)).fetchall()
         
 if __name__ == "__main__":
     clear_APIcache()

@@ -376,6 +376,57 @@ var fillChart = function(js){
     $('#sttree').tree('collapseAll');
 };
 
+var fillRateLine = function(jsonObj){
+    var
+    d1 = [],
+    dt = jsonObj,
+    options,
+    graph,
+    container = document.getElementById("line_rate"),
+    i, x, o;
+
+    for (i = 0; i < dt.length; i++) {
+        d1.push([new Date(dt[i][1]).getTime(), dt[i][0]]);
+    }
+        
+    options = {
+    xaxis : {
+        mode : 'time', 
+        labelsAngle : 45
+    },
+    selection : {
+        mode : 'x'
+    },
+    HtmlText : false,
+    title : 'R值成长折线'
+    };
+        
+    // Draw graph with default options, overwriting with passed options
+    function drawGraph (opts) {
+        // Clone the options, so the 'options' variable always keeps intact.
+        o = Flotr._.extend(Flotr._.clone(options), opts || {});
+        // Return a new graph.
+        return Flotr.draw(
+            container,
+            [ d1 ],
+            o
+        );
+    }
+
+    graph = drawGraph();      
+        
+    Flotr.EventAdapter.observe(container, 'flotr:select', function(area){
+        // Draw selected area
+        graph = drawGraph({
+            xaxis : { min : area.x1, max : area.x2, mode : 'time', labelsAngle : 45 },
+            yaxis : { min : area.y1, max : area.y2 }
+        });
+    });
+        
+    // When graph is clicked, draw the graph with default area.
+    Flotr.EventAdapter.observe(container, 'flotr:click', function () { graph = drawGraph(); });
+};
+
 $(document).ready(
     function(){
         if(playerName){
@@ -414,6 +465,16 @@ $(document).ready(
                 }else{
                     $("p#info").text(data);
                 }
+                $.get("../API?method=rateHistroy&name=" + playerName, function(data, status){
+                    if(status=='success'){
+                        if(data.substring(0,5) == "error"){
+                            $("div#line_rate").text(data);
+                        }else{
+                            $("div#line_rate").text("");
+                            fillRateLine(JSON.parse(data));
+                        }
+                    }
+                });
             });
         }
     }
