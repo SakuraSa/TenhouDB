@@ -411,7 +411,7 @@ var fillRateLine_bydate = function(){
     i, x, o;
 
     for (i = 0; i < dt.length; i++) {
-        d1.push([new Date(dt[i][1]).getTime(), dt[i][0]]);
+        d1.push([Date.parse(dt[i][1].replace("-","/").replace("-","/")), dt[i][0]]);
     }
         
     options = {

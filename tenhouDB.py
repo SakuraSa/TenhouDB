@@ -134,8 +134,9 @@ def addLog(ref, baseUrl = None, noCommit = False):
             point = obj['sc'][i * 2 + 1]
             cursor.execute(r"insert into logs_name (ref, name, sex, rate, dan, score, point) values (?, ?, ?, ?, ?, ?, ?)", 
                            (ref, name, sex, rate, dan, score, point))
-            cursor.execute(r"update statistics_cache set updated = updated - 1 where (name = ? or global) and updated > 1", (name, ))
-            cursor.execute(r"delete from statistics_cache where updated = 1")
+            cursor.execute(r"update statistics_cache set updated = updated - 1 where name = ? and updated > 1", (name, ))
+        cursor.execute(r"update statistics_cache set updated = updated - 1 where global and updated > 1")
+        cursor.execute(r"delete from statistics_cache where updated = 1")
         if not noCommit:
             database.commit()
         return get_Json(obj["ref"])
