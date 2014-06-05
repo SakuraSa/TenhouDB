@@ -257,6 +257,7 @@ def get_hotIDs(limit = 50, morethan = 30):
 @databaseOperation
 def clear_APIcache():
     cursor.execute(r"delete from statistics_cache;")
+    database.commit()
 
 @databaseOperation
 def get_Ori_log(ref):

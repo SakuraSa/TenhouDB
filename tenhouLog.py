@@ -30,7 +30,7 @@ class game(object):
             orders[i][1].rank = i + 1
 
         self.logs = [
-            log(logObj = logObj)
+            log(logObj = logObj, playerSum = len(self.jsonObj["name"]))
             for logObj in self.jsonObj["log"]
         ]
 
@@ -48,7 +48,7 @@ class game(object):
                 return pl.index
         return -1
 
-    def endScore(self, playerIndex):
+    def endScore(self, playerIndex = 4):
         return [log.endScore[playerIndex] for log in self.logs]
 
     @property
@@ -94,14 +94,14 @@ class player(object):
 
 class log(object):
     """docstring for log"""
-    def __init__(self, logObj):
+    def __init__(self, logObj, playerSum):
         super(log, self).__init__()
         self.logObj = logObj
         #remove emptys
         while not self.logObj[-1]:
             self.logObj.pop()
 
-        self._playerSum = len(self.logObj[1])
+        self._playerSum = playerSum
 
         self._winnerIndex = []
         self._loserIndex = []
