@@ -6,7 +6,7 @@ var before = getQueryStringByName("before");
 var after = getQueryStringByName("after");
 var morethan = getQueryStringByName("morethan");
 var updated = getQueryStringByName("updated");
-var jsonObj;
+var jsonObj, jsonObj_rateLine;
 
 var perStr = function(num){
     if(!num) return "0%";
@@ -376,10 +376,35 @@ var fillChart = function(js){
     $('#sttree').tree('collapseAll');
 };
 
-var fillRateLine = function(jsonObj){
+var obFunc, clFunc;
+var fillRateLine = function(){
+  var
+    d1 = [],
+    dt = jsonObj_rateLine,
+    container = document.getElementById("line_rate"),
+    i, graph;
+
+  for (i = 0; i < dt.length; i++) {
+    d1.push([dt.length - i, dt[i][0]]);
+  }
+
+  graph = Flotr.draw(container, [ d1 ], {
+    grid: {
+      minorVerticalLines: true
+    },
+    title: '<a href="javascript: fillRateLine_bydate();">R值成长折线</a>'
+  });
+
+  if(obFunc){
+    Flotr.EventAdapter.stopObserving(container, 'flotr:select', obFunc);
+    Flotr.EventAdapter.stopObserving(container, 'flotr:click', clFunc);
+  }
+};
+
+var fillRateLine_bydate = function(){
     var
     d1 = [],
-    dt = jsonObj,
+    dt = jsonObj_rateLine,
     options,
     graph,
     container = document.getElementById("line_rate"),
@@ -397,8 +422,8 @@ var fillRateLine = function(jsonObj){
     selection : {
         mode : 'x'
     },
-    HtmlText : false,
-    title : 'R值成长折线'
+    HtmlText : true,
+    title : '<a href="javascript: fillRateLine();">R值成长折线</a>'
     };
         
     // Draw graph with default options, overwriting with passed options
@@ -414,17 +439,17 @@ var fillRateLine = function(jsonObj){
     }
 
     graph = drawGraph();      
-        
-    Flotr.EventAdapter.observe(container, 'flotr:select', function(area){
+    obFunc = function(area){
         // Draw selected area
         graph = drawGraph({
             xaxis : { min : area.x1, max : area.x2, mode : 'time', labelsAngle : 45 },
             yaxis : { min : area.y1, max : area.y2 }
         });
-    });
-        
+    };
+    Flotr.EventAdapter.observe(container, 'flotr:select', obFunc);
+    clFunc = function () { graph = drawGraph(); };
     // When graph is clicked, draw the graph with default area.
-    Flotr.EventAdapter.observe(container, 'flotr:click', function () { graph = drawGraph(); });
+    Flotr.EventAdapter.observe(container, 'flotr:click', clFunc);
 };
 
 $(document).ready(
@@ -471,7 +496,8 @@ $(document).ready(
                             $("div#line_rate").text(data);
                         }else{
                             $("div#line_rate").text("");
-                            fillRateLine(JSON.parse(data));
+                            jsonObj_rateLine = JSON.parse(data);
+                            fillRateLine_bydate();
                         }
                     }
                 });
