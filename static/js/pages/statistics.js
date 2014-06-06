@@ -7,6 +7,7 @@ var after = getQueryStringByName("after");
 var morethan = getQueryStringByName("morethan");
 var updated = getQueryStringByName("updated");
 var jsonObj, jsonObj_rateLine;
+var isIE = navigator.userAgent.indexOf('MSIE') >= 0;
 
 var perStr = function(num){
     if(!num) return "0%";
@@ -454,9 +455,14 @@ var fillRateLine_bydate = function(){
 
 $(document).ready(
     function(){
+        var pn;
+        if(isIE)
+            pn = encodeURI(playerName);
+        else
+            pn = playerName;
         if(playerName){
             var APIurl = "../API?method=statistics";
-            if(playerName) APIurl += "&name=" + encodeURI(playerName);
+            if(playerName) APIurl += "&name=" + pn;
             if(lobby) APIurl += "&lobby=" + lobby;
             if(limit) APIurl += "&limit=" + limit;
             if(offset) APIurl += "&offset=" + offset;
@@ -491,7 +497,7 @@ $(document).ready(
                 }else{
                     $("p#info").text(data);
                 }
-                $.get("../API?method=rateHistroy&name=" + encodeURI(playerName), function(data, status){
+                $.get("../API?method=rateHistroy&name=" + pn, function(data, status){
                     if(status=='success'){
                         if(data.substring(0,5) == "error"){
                             $("div#line_rate").text(data);
