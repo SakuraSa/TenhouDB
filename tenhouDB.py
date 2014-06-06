@@ -274,13 +274,13 @@ def get_all_refs():
     return [i[0] for i in temp]
 
 @databaseOperation
-def get_rate_and_date(name, limit, lobby='0000'):
+def get_rate_and_date(name, limit):
     return cursor.execute(r"""
         select rate, gameat
         from logs join logs_name on logs.ref = logs_name.ref
-        where name = ? and lobby = ?
+        where name = ?
         order by gameat desc limit ?
-    """, (name, lobby, limit)).fetchall()
+    """, (name, limit)).fetchall()
         
 if __name__ == "__main__":
     clear_APIcache()

@@ -456,7 +456,7 @@ $(document).ready(
     function(){
         if(playerName){
             var APIurl = "../API?method=statistics";
-            if(playerName) APIurl += "&name=" + playerName;
+            if(playerName) APIurl += "&name=" + encodeURI(playerName);
             if(lobby) APIurl += "&lobby=" + lobby;
             if(limit) APIurl += "&limit=" + limit;
             if(offset) APIurl += "&offset=" + offset;
@@ -465,6 +465,7 @@ $(document).ready(
             if(morethan) APIurl += "&morethan=" + morethan;
             if(updated) APIurl += "&updated=" + updated;
             $("p#info").text("Loading...");
+            console.log(APIurl);
             $.get(APIurl, function(data,status){
                 if(status=='success'){
                     if(data.substring(0,5) == "error"){
@@ -490,7 +491,7 @@ $(document).ready(
                 }else{
                     $("p#info").text(data);
                 }
-                $.get("../API?method=rateHistroy&name=" + playerName, function(data, status){
+                $.get("../API?method=rateHistroy&name=" + encodeURI(playerName), function(data, status){
                     if(status=='success'){
                         if(data.substring(0,5) == "error"){
                             $("div#line_rate").text(data);

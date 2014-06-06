@@ -1,6 +1,10 @@
 var jsonObj;
 var tops = parseInt(getQueryStringByName("top"));
+var morethan = parseInt(getQueryStringByName("morethan"));
+var limit = parseInt(getQueryStringByName("limit"));
 if(isNaN(tops)) tops = 20;
+if(isNaN(morethan)) morethan = 30;
+if(isNaN(limit)) limit = 100;
 
 var tags = [
     ["total.avg", "平均顺位", true],
@@ -68,7 +72,7 @@ var showChart = function(name){
     container = document.getElementById("bill_chart");
 
     var dtLst;
-    var row;
+    var row = ['unknow', false];
     for(i = 0; i < tags.length; i++)
         if(tags[i][0] == name){
             row = tags[i];
@@ -106,10 +110,27 @@ var showChart = function(name){
         title: row[1]
     }
     );
+
+    showList(dtLst);
+};
+
+var showList = function(dtLst){
+    var con = $("div#bill_list");
+    con.empty();
+    var table = $("<table id='bill_list'></table>");
+    table.append($("<tr></tr>").append("<td>排名</td>").append("<td>ID</td>").append("<td>数值</td>"));
+    for(var i = 0; i < dtLst.length; i++){
+        var name = dtLst[i][1];
+        var value = dtLst[i][0];
+        var nametd = $("<td></td>").append($("<a>" + name + "</a>").attr('href', '../statistics?name=' + name));
+        table.append($("<tr></tr>").append("<td>" + (i + 1) + "</td>").append(nametd).append("<td>" + value + "</td>"));
+    }
+    con.append(table);
 };
 
 $(document).ready(function(){
-    $.get("../API?method=billboard", function(data, status){
+    var apiUrl = "../API?method=billboard&morethan=" + morethan + "&limit=" + limit;
+    $.get(apiUrl, function(data, status){
         if(status!='success'){
 
         }else{
