@@ -11,8 +11,15 @@ var tags = [
     ["winGame.avg", "平均和了率", false],
     ["winGame_score.avg", "平均和了点", false],
     ["chong.avg", "平均铳率", true],
+    ["winGame_round.avg", "平均和了巡", true],
+    ["fulu.avg", "平均副露率", true],
+    ["fulu_winGame.per", "平均副露和了率", false],
+    ["fulu_score.avg", "平均副露得点", false],
     ["richi.avg", "平均立直率", false],
-    ["winGame_round.avg", "平均和了巡", true]
+    ["richi_winGame.per", "平均立直和了率", false],
+    ["richi_score.avg", "平均立直得点", false],
+    ["richi_inner_dora.avg", "平均立直和了里dora数", false],
+    ["richi_yifa.per", "平均立直一发率", false]
 ];
 
 var loadTag = function(){

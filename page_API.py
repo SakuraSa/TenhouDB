@@ -215,7 +215,7 @@ class API_hotIDs(APIbase):
     params = []
     option = {"limit": 50,
               "morethan": 30,
-              "updated": 25}
+              "updated": 1}
     def __init__(self):
         APIbase.__init__(self)
         
@@ -277,6 +277,8 @@ class API_billboard(APIbase):
         APIbase.__init__(self)
 
     def work(self, limit, morethan, updated):
+        limit = intParse(limit)
+        morethan = intParse(morethan)
         hashs = hashlib.sha256("%s, %s" % (limit, morethan)).hexdigest()
         cache = tenhouDB.get_statistics_cache(hashs = hashs)
         if cache:
