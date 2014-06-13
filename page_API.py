@@ -344,7 +344,7 @@ def datetimeParse(text):
     if text is None:
         return None
     try:
-        return datetime.datetime.strptime(text, "%Y-%m-%d-%H:%M:%S")
+        return datetime.datetime.strptime(text, "%Y-%m-%d %H:%M:%S")
     except Exception, e:
         return None
 

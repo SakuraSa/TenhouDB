@@ -10,42 +10,50 @@ import json
 import re
 import os
 
-database = sqlite3.connect("tenhou.db", check_same_thread = False)
-cursor = database.cursor()
-mutex = threading.Lock()
-workingThread = None
+databaseName = "tenhou.db"
+databasePool = dict()
+
+def getDB():
+    global databasePool, databaseName
+    tid = threading.current_thread().ident
+    db  = databasePool.get(tid, None)
+    if db is None:
+        db = sqlite3.connect("tenhou.db")
+        databasePool[tid] = db
+    return db
+
+def dropDB():
+    global databasePool
+    tid = threading.current_thread().ident
+    db  = databasePool.get(tid, None)
+    if not db is None:
+        db.close()
+    del databasePool[tid]
 
 def databaseOperation(func):
     def bar(*arg, **karg):
-        global workingThread,mutex
-        currentThread = threading.currentThread()
-        otherThread = not currentThread is workingThread
-        if otherThread:
-            mutex.acquire(1)
-            workingThread = currentThread
+        database = getDB()
+        cursor = database.cursor()
         ret = None
         try:
-            ret = func(*arg, **karg)
+            ret = func(database, cursor, *arg, **karg)
         except Exception, e:
-            if otherThread:
-                mutex.release()
             raise e
-        if otherThread:
-            mutex.release()
+        finally:
+            dropDB()
         return ret
     return bar
 
+@databaseOperation
+def initDatabase(database, cursor):
+    with open("init.sql", "r") as sqlFile:
+        init_Sql = sqlFile.read().split(";")
+    for cmd in init_Sql:
+        cursor.execute(cmd.strip())
+    database.commit()
+
 
 ref_regex = re.compile(r"(\d{10}gm-\w{4}-\d{4,5}-\w{8})")
-
-#init database
-
-
-with open("init.sql", "r") as sqlFile:
-    init_Sql = sqlFile.read().split(";")
-for cmd in init_Sql:
-    cursor.execute(cmd.strip())
-database.commit()
 
 ruleDic = {
     u"0007": u"般东",
@@ -77,7 +85,7 @@ def get_info_from_ref(ref):
 banRuleCodes = [u"0841"]
 
 @databaseOperation
-def downloadLog(url, baseUrl = None):
+def downloadLog(database, cursor, url, baseUrl = None):
     ref = ref_regex.findall(url)
     if not ref:
         raise Exception("Unexpected URL: %s" % url)
@@ -115,7 +123,7 @@ def downloadLog(url, baseUrl = None):
     return obj, req.text
 
 @databaseOperation
-def addLog(ref, baseUrl = None, noCommit = False):
+def addLog(database, cursor, ref, baseUrl = None, noCommit = False):
     temp = cursor.execute(r'select ref from logs where ref = ?',(ref,)).fetchall()
     if not temp:
         obj, text = downloadLog(ref, baseUrl)
@@ -155,7 +163,7 @@ def addLogs(refs, baseUrl = None):
     print "All %d logs adding compele %fs cost." % (len(refs), time.time() - start)
 
 @databaseOperation
-def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, limit = 10, offset = 0):
+def get_refs(database, cursor, name, after = None, before = None, lobby = None, ruleCode = None, limit = 10, offset = 0):
     sqlparam = [name]
     queryParam = ["name = ?"]
     if not after is None:
@@ -186,7 +194,7 @@ def get_refs(name, after = None, before = None, lobby = None, ruleCode = None, l
     return resLst
 
 @databaseOperation
-def get_lastRefs(limit = 10):
+def get_lastRefs(database, cursor, limit = 10):
     resLst = list()
     resSet = set()
     for row in cursor.execute(r"Select distinct ref from logs order by createat desc limit ?", (limit, )).fetchall():
@@ -196,7 +204,7 @@ def get_lastRefs(limit = 10):
     return resLst
 
 @databaseOperation
-def get_Json(ref):
+def get_Json(database, cursor, ref):
     temp = cursor.execute(r"Select json From logs where ref = ? limit 1", (ref, )).fetchall()
     if temp:
         js = json.loads(temp[0][0])
@@ -218,7 +226,7 @@ def get_Jsons(refs):
     return resLst
 
 @databaseOperation
-def get_OriText(ref):
+def get_OriText(database, cursor, ref):
     temp = cursor.execute(r"Select json From logs where ref = ? limit 1", (ref, )).fetchall()
     if temp:
         return temp[0][0]
@@ -227,7 +235,7 @@ def get_OriText(ref):
         return get_OriText(ref)
 
 @databaseOperation
-def get_statistics_cache(hashs):
+def get_statistics_cache(database, cursor, hashs):
     temp = cursor.execute(r"select json from statistics_cache where hash = ? limit 1", (hashs, )).fetchall()
     if temp:
         return temp[0][0]
@@ -235,7 +243,7 @@ def get_statistics_cache(hashs):
         return None
 
 @databaseOperation
-def set_statistics_cache(name, hashs, json, updated=1, Global=False):
+def set_statistics_cache(database, cursor, name, hashs, json, updated=1, Global=False):
     cursor.execute(r"""
         insert into 
         statistics_cache(name, hash, json, updated, global) 
@@ -243,7 +251,7 @@ def set_statistics_cache(name, hashs, json, updated=1, Global=False):
     database.commit()
 
 @databaseOperation
-def get_hotIDs(limit = 50, morethan = 30):
+def get_hotIDs(database, cursor, limit = 50, morethan = 30):
     return cursor.execute("""
         select Name,CNT from (
             select distinct logs_name.name as Name, COUNT(*) as CNT 
@@ -256,12 +264,12 @@ def get_hotIDs(limit = 50, morethan = 30):
         limit ?""", (morethan, limit, )).fetchall()
 
 @databaseOperation
-def clear_APIcache():
+def clear_APIcache(database, cursor):
     cursor.execute(r"delete from statistics_cache;")
     database.commit()
 
 @databaseOperation
-def get_Ori_log(ref):
+def get_Ori_log(database, cursor, ref):
     temp = cursor.execute(r"Select json From logs where ref = ? limit 1", (ref, )).fetchall()
     if temp:
         return temp[0][0]
@@ -269,12 +277,12 @@ def get_Ori_log(ref):
         raise Exception("log <%s> not found." % ref)
 
 @databaseOperation
-def get_all_refs():
+def get_all_refs(database, cursor):
     temp = cursor.execute(r"Select ref From logs").fetchall()
     return [i[0] for i in temp]
 
 @databaseOperation
-def get_rate_and_date(name, limit):
+def get_rate_and_date(database, cursor, name, limit):
     return cursor.execute(r"""
         select rate, gameat
         from logs join logs_name on logs.ref = logs_name.ref
