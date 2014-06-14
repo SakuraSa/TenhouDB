@@ -12,23 +12,29 @@ import os
 
 databaseName = "tenhou.db"
 databasePool = dict()
+databaseCNT  = dict()
 
 def getDB():
     global databasePool, databaseName
-    tid = threading.current_thread().ident
+    tid = threading.current_thread().ident; print "use", tid
     db  = databasePool.get(tid, None)
     if db is None:
         db = sqlite3.connect("tenhou.db")
         databasePool[tid] = db
+        databaseCNT[tid] = 1
+    else:
+        databaseCNT[tid] += 1
     return db
 
 def dropDB():
     global databasePool
-    tid = threading.current_thread().ident
-    db  = databasePool.get(tid, None)
-    if not db is None:
+    tid = threading.current_thread().ident; print "drop", tid
+    db  = databasePool[tid]
+    databaseCNT[tid] -= 1
+    if databaseCNT[tid] < 1:
         db.close()
-    del databasePool[tid]
+        del databasePool[tid]
+        del databaseCNT[tid]
 
 def databaseOperation(func):
     def bar(*arg, **karg):
